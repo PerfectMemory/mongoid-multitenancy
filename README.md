@@ -16,7 +16,7 @@ Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'mongoid_multitenancy'
+    gem 'mongoid-multitenancy'
 
 And then execute:
 
@@ -24,7 +24,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install mongoid_multitenancy
+    $ gem install mongoid-multitenancy
 
 Usage
 ===============
@@ -40,13 +40,13 @@ There are two ways to set the current tenant: (1) by setting the current tenant 
 
 **Setting the current tenant in a controller, manually**
 
-    Mongoid::MultiTenancy.current_tenant = client_instance
+    Mongoid::Multitenancy.current_tenant = client_instance
 
-Setting the current_tenant yourself requires you to use a before_filter to set the Mongoid::MultiTenancy.current_tenant variable.
+Setting the current_tenant yourself requires you to use a before_filter to set the Mongoid::Multitenancy.current_tenant variable.
 
 **Setting the current tenant for a block**
 
-    Mongoid::MultiTenancy.with_tenant(client_instance) do
+    Mongoid::Multitenancy.with_tenant(client_instance) do
       # Current tenant is set for all code in this block
     end
 
@@ -79,7 +79,7 @@ The association passed to the `tenant` function must be valid.
 Some examples to illustrate this behavior:
 
     # This manually sets the current tenant for testing purposes. In your app this is handled by the gem.
-    Mongoid::MultiTenancy.current_tenant = Client.find_by(:name => 'Perfect Memory') # => <#Client _id:50ca04b86c82bfc125000025, :name: "Perfect Memory">
+    Mongoid::Multitenancy.current_tenant = Client.find_by(:name => 'Perfect Memory') # => <#Client _id:50ca04b86c82bfc125000025, :name: "Perfect Memory">
 
     # All searches are scoped by the tenant, the following searches will only return objects belonging to the current client.
     Article.all # => all articles where client_id => 50ca04b86c82bfc125000025
@@ -88,7 +88,7 @@ Some examples to illustrate this behavior:
     Article.new(:title => 'New blog') # => <#Article _id: nil, title: 'New blog', :client_id: 50ca04b86c82bfc125000025>
 
     # It makes the tenant field immutable once it is persisted to avoid inconsistency
-    article.persited? # => true
+    article.persisted? # => true
     article.client = another_client
     article.valid? # => false
 
@@ -104,11 +104,11 @@ If you are using Rails, you may want to set the current tenant at each request.
 
       def set_current_client
         current_client = Client.find_by_host(request.host)
-        Mongoid::MultiTenancy.current_tenant = current_client
+        Mongoid::Multitenancy.current_tenant = current_client
       end
     end
 
-Setting the current_tenant yourself requires you to use a before_filter to set the Mongoid::MultiTenancy.current_tenant variable.
+Setting the current_tenant yourself requires you to use a before_filter to set the Mongoid::Multitenancy.current_tenant variable.
 
 Mongoid Uniqueness validators
 -------------------
