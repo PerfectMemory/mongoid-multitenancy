@@ -7,7 +7,7 @@ require 'bundler/setup'
 
 require 'rspec'
 require 'mongoid'
-require 'mongoid/multitenancy'
+require 'mongoid-multitenancy'
 require 'database_cleaner'
 require 'mongoid-rspec'
 

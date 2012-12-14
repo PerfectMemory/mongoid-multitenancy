@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    mongoid_multitenancy (0.1)
+    mongoid-multitenancy (0.1)
       mongoid (~> 3)
 
 GEM
@@ -47,8 +47,8 @@ PLATFORMS
 
 DEPENDENCIES
   database_cleaner (~> 0.9)
+  mongoid-multitenancy!
   mongoid-rspec (~> 1.5)
-  mongoid_multitenancy!
   rake (~> 10.0)
   redcarpet (~> 2.2)
   rspec (~> 2.12)

@@ -6,12 +6,12 @@ Gem::Specification.new do |gem|
   gem.email         = ["aymeric.brisse@mperfect-memory.com"]
   gem.description   = %q{MultiTenancy with Mongoid}
   gem.summary       = %q{Support of a multi-tenant database with Mongoid}
-  gem.homepage      = "https://github.com/abrisse/mongoid-multitenancy"
+  gem.homepage      = "https://github.com/PerfectMemory/mongoid-multitenancy"
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
-  gem.name          = "mongoid_multitenancy"
+  gem.name          = "mongoid-multitenancy"
   gem.require_paths = ["lib"]
   gem.version       = Mongoid::Multitenancy::VERSION
 
