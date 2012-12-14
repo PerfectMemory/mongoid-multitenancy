@@ -8,7 +8,11 @@ module Mongoid
 
         # Check that the tenant foreign key field has not been changed once the object has been persisted
         def check_tenant_immutability
-          self.errors.add(self.class.tenant_field, 'is immutable and cannot be updated' ) if changed.include?(self.class.tenant_field)
+          # We check that the tenant has changed and that the old was not nil to avoid after_create callbacks issues.
+          # Indeed in this case, even if the flag is set to persisted, changes have not yet been reset.
+          if attribute_changed?(self.class.tenant_field) and attribute_was(self.class.tenant_field)
+            self.errors.add(self.class.tenant_field, 'is immutable and cannot be updated' )
+          end
         end
       end
 
@@ -32,7 +36,7 @@ module Mongoid
           after_initialize lambda { |m| m.send "#{association}=".to_sym, Multitenancy.current_tenant if Multitenancy.current_tenant ; true }
 
           # Rewrite accessors to make tenant foreign_key/association immutable
-          validate :check_tenant_immutability, :unless => :new_record?
+          validate :check_tenant_immutability, :on => :update
 
           # Set the default_scope to scope to current tenant
           default_scope lambda {
