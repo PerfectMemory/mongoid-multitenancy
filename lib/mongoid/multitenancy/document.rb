@@ -20,10 +20,10 @@ module Mongoid
         # Access to the tenant field
         attr_reader :tenant_field
 
-        def tenant(association = :account)
+        def tenant(association = :account, options={})
           # Setup the association between the class and the tenant class
           # TODO: should index this association if no other indexes are defined => , index: true
-          belongs_to association
+          belongs_to association, options
 
           # Get the tenant model and its foreign key
           fkey = reflect_on_association(association).foreign_key

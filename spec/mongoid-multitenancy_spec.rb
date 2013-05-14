@@ -1,8 +1,8 @@
 require "spec_helper"
 
 describe Mongoid::Multitenancy do
-  let(:client) { Client.create!(:name => "client") }
-  let(:another_client) { Client.create!(:name => "another client") }
+  let(:client) { Account.create!(:name => "client") }
+  let(:another_client) { Account.create!(:name => "another client") }
 
   before { Mongoid::Multitenancy.current_tenant = client }
   after { Mongoid::Multitenancy.current_tenant = nil }
@@ -27,8 +27,8 @@ describe Article do
   it { should validate_uniqueness_of(:slug).scoped_to(:client_id) }
   it { should have_index_for(:client_id => 1, :title => 1) }
 
-  let(:client) { Client.create!(:name => "client") }
-  let(:another_client) { Client.create!(:name => "another client") }
+  let(:client) { Account.create!(:name => "client") }
+  let(:another_client) { Account.create!(:name => "another client") }
 
   describe ".initialize" do
     before { Mongoid::Multitenancy.current_tenant = client }
