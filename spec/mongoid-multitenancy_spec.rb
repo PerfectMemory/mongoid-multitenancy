@@ -21,9 +21,9 @@ describe Mongoid::Multitenancy do
   end
 end
 
-describe Article do
+shared_examples_for "a tenantable model" do
+
   it { should belong_to(:client) }
-  it { should validate_presence_of(:client_id) }
   it { should validate_uniqueness_of(:slug).scoped_to(:client_id) }
   it { should have_index_for(:client_id => 1, :title => 1) }
 
@@ -35,22 +35,34 @@ describe Article do
     after { Mongoid::Multitenancy.current_tenant = nil }
 
     it "should set the client field" do
-      Article.new.client.should eq client
+      described_class.new.client.should eq client
     end
   end
 
+end
+
+describe Page do
+
+  it_behaves_like "a tenantable model"
+
+  it { should_not validate_presence_of(:client_id) }
+
+  let(:client) { Account.create!(:name => "client") }
+  let(:another_client) { Account.create!(:name => "another client") }
+
   describe ".default_scope" do
     before {
-      Mongoid::Multitenancy.with_tenant(client) { @articleX = Article.create!(:title => "title X", :slug => "article-x") }
-      Mongoid::Multitenancy.with_tenant(another_client) { @articleY = Article.create!(:title => "title Y", :slug => "article-y") }
+      @itemC = described_class.create!(:title => "title C", :slug => "article-c")
+      Mongoid::Multitenancy.with_tenant(client) { @itemX = described_class.create!(:title => "title X", :slug => "article-x") }
+      Mongoid::Multitenancy.with_tenant(another_client) { @itemY = described_class.create!(:title => "title Y", :slug => "article-y") }
     }
 
     context "with a current tenant" do
       before { Mongoid::Multitenancy.current_tenant = another_client }
       after { Mongoid::Multitenancy.current_tenant = nil }
 
-      it "should filter on the current tenant" do
-        Article.all.to_a.should == [@articleY]
+      it "should filter on the current tenant / free-tenant items" do
+        described_class.all.to_a.should =~ [@itemY, @itemC]
       end
     end
 
@@ -58,7 +70,64 @@ describe Article do
       before { Mongoid::Multitenancy.current_tenant = nil }
 
       it "should not filter on any tenant" do
-        Article.all.to_a.should == [@articleX, @articleY]
+        described_class.all.to_a.should =~ [@itemC, @itemX, @itemY]
+      end
+    end
+  end
+
+  describe "#delete_all" do
+    before {
+      @itemC = described_class.create!(:title => "title C", :slug => "article-c")
+      Mongoid::Multitenancy.with_tenant(client) { @itemX = described_class.create!(:title => "title X", :slug => "article-x") }
+      Mongoid::Multitenancy.with_tenant(another_client) { @itemY = described_class.create!(:title => "title Y", :slug => "article-y") }
+    }
+
+    context "with a current tenant" do
+      it "should only delete the current tenant / free-tenant items" do
+        Mongoid::Multitenancy.with_tenant(another_client) { described_class.delete_all }
+        described_class.all.to_a.should =~ [@itemX]
+      end
+    end
+
+    context "without a current tenant" do
+      it "should delete all the pages" do
+        described_class.delete_all
+        described_class.all.to_a.should be_empty
+      end
+    end
+  end
+
+end
+
+describe Article do
+
+  it_behaves_like "a tenantable model"
+
+  it { should validate_presence_of(:client_id) }
+
+  let(:client) { Account.create!(:name => "client") }
+  let(:another_client) { Account.create!(:name => "another client") }
+
+  describe ".default_scope" do
+    before {
+      Mongoid::Multitenancy.with_tenant(client) { @itemX = described_class.create!(:title => "title X", :slug => "article-x") }
+      Mongoid::Multitenancy.with_tenant(another_client) { @itemY = described_class.create!(:title => "title Y", :slug => "article-y") }
+    }
+
+    context "with a current tenant" do
+      before { Mongoid::Multitenancy.current_tenant = another_client }
+      after { Mongoid::Multitenancy.current_tenant = nil }
+
+      it "should filter on the current tenant" do
+        described_class.all.to_a.should =~ [@itemY]
+      end
+    end
+
+    context "without a current tenant" do
+      before { Mongoid::Multitenancy.current_tenant = nil }
+
+      it "should not filter on any tenant" do
+        described_class.all.to_a.should =~ [@itemX, @itemY]
       end
     end
   end
@@ -88,22 +157,23 @@ describe Article do
 
   describe "#delete_all" do
     before {
-      Mongoid::Multitenancy.with_tenant(client) { @articleX = Article.create!(:title => "title X", :slug => "article-x") }
-      Mongoid::Multitenancy.with_tenant(another_client) { @articleY = Article.create!(:title => "title Y", :slug => "article-y") }
+      Mongoid::Multitenancy.with_tenant(client) { @itemX = described_class.create!(:title => "title X", :slug => "article-x") }
+      Mongoid::Multitenancy.with_tenant(another_client) { @itemY = described_class.create!(:title => "title Y", :slug => "article-y") }
     }
 
     context "with a current tenant" do
       it "should only delete the current tenant articles" do
-        Mongoid::Multitenancy.with_tenant(another_client) { Article.delete_all }
-        Article.all.to_a == [@articleX]
+        Mongoid::Multitenancy.with_tenant(another_client) { described_class.delete_all }
+        described_class.all.to_a.should =~ [@itemX]
       end
     end
 
     context "without a current tenant" do
       it "should delete all the articles" do
-        Article.delete_all
-        Article.all.to_a.should be_empty
+        described_class.delete_all
+        described_class.all.to_a.should be_empty
       end
     end
   end
+
 end

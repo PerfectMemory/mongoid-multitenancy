@@ -76,6 +76,11 @@ Scoping your models
 Adding `tenant` to your model declaration will scope that model to the current tenant **BUT ONLY if a current tenant has been set**.
 The association passed to the `tenant` function must be valid.
 
+`tenant` accepts several options:
+
+ * :optional : set to true when the tenant can be optional
+ * :class_name, etc. : all the other options will be passed to the mongoid relation
+
 Some examples to illustrate this behavior:
 
     # This manually sets the current tenant for testing purposes. In your app this is handled by the gem.
@@ -91,6 +96,12 @@ Some examples to illustrate this behavior:
     article.persisted? # => true
     article.client = another_client
     article.valid? # => false
+
+**Optional tenant**
+
+When setting an optional tenant, for example to allow shared instances between all the tenants, the default scope will return both the tenant and the free-tenant items. That means that using `Article.delete_all` or `Article.destroy_all` will remove the shared items too.
+
+    Article.all # => all articles where client_id.in [50ca04b86c82bfc125000025, nil]
 
 Rails
 -------------------

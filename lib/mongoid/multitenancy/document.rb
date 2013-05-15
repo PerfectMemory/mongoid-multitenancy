@@ -18,9 +18,10 @@ module Mongoid
 
       module ClassMethods
         # Access to the tenant field
-        attr_reader :tenant_field
+        attr_reader :tenant_field, :tenant_options
 
         def tenant(association = :account, options={})
+          @tenant_options = { optional: options.delete(:optional) }
           # Setup the association between the class and the tenant class
           # TODO: should index this association if no other indexes are defined => , index: true
           belongs_to association, options
@@ -30,17 +31,31 @@ module Mongoid
           @tenant_field = fkey
 
           # Validates the presence of the association key
-          validates_presence_of fkey
+          validates_presence_of fkey unless @tenant_options[:optional]
 
           # Set the current_tenant on newly created objects
-          after_initialize lambda { |m| m.send "#{association}=".to_sym, Multitenancy.current_tenant if Multitenancy.current_tenant ; true }
+          after_initialize lambda { |m|
+            if Multitenancy.current_tenant #and !self.class.tenant_options[:optional]
+              m.send "#{association}=".to_sym, Multitenancy.current_tenant
+            end
+            true
+          }
 
           # Rewrite accessors to make tenant foreign_key/association immutable
           validate :check_tenant_immutability, :on => :update
 
           # Set the default_scope to scope to current tenant
           default_scope lambda {
-            where(Multitenancy.current_tenant ? { self.tenant_field => Multitenancy.current_tenant.id } : nil)
+            criteria = if Multitenancy.current_tenant
+              if self.tenant_options[:optional]
+                #any_of({ self.tenant_field => Multitenancy.current_tenant.id }, { self.tenant_field => nil })
+                where({ self.tenant_field.to_sym.in => [Multitenancy.current_tenant.id, nil] })
+              else
+                where({ self.tenant_field => Multitenancy.current_tenant.id })
+              end
+            else
+              where(nil)
+            end
           }
         end
 
@@ -60,7 +75,7 @@ module Mongoid
 
         # Redefine 'delete_all' to take in account the default scope
         def delete_all(conditions = nil)
-          self.where(conditions).delete
+          scoped.where(conditions).delete
         end
       end
     end
