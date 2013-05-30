@@ -41,15 +41,19 @@ There are two ways to set the current tenant: (1) by setting the current tenant 
 
 **Setting the current tenant in a controller, manually**
 
-    Mongoid::Multitenancy.current_tenant = client_instance
+```ruby
+Mongoid::Multitenancy.current_tenant = client_instance
+```
 
 Setting the current_tenant yourself requires you to use a before_filter to set the Mongoid::Multitenancy.current_tenant variable.
 
 **Setting the current tenant for a block**
 
-    Mongoid::Multitenancy.with_tenant(client_instance) do
-      # Current tenant is set for all code in this block
-    end
+```ruby
+Mongoid::Multitenancy.with_tenant(client_instance) do
+  # Current tenant is set for all code in this block
+end
+```
 
 This approach is useful when running background processes for a specified tenant. For example, by putting this in your worker's run method,
 any code in this block will be scoped to the current tenant. All methods that set the current tenant are thread safe.
@@ -58,21 +62,23 @@ any code in this block will be scoped to the current tenant. All methods that se
 
 Scoping your models
 -------------------
-    class Client
-      include Mongoid::Document
+```ruby
+class Client
+  include Mongoid::Document
 
-      field :name, :type => String
-      validates_uniqueness_of :name
-    end
+  field :name, :type => String
+  validates_uniqueness_of :name
+end
 
-    class Article
-      include Mongoid::Document
-      include Mongoid::Multitenancy::Document
+class Article
+  include Mongoid::Document
+  include Mongoid::Multitenancy::Document
 
-      tenant(:client)
+  tenant(:client)
 
-      field :title, :type => String
-    end
+  field :title, :type => String
+end
+```
 
 Adding `tenant` to your model declaration will scope that model to the current tenant **BUT ONLY if a current tenant has been set**.
 The association passed to the `tenant` function must be valid.
@@ -85,25 +91,29 @@ The association passed to the `tenant` function must be valid.
 
 Some examples to illustrate this behavior:
 
-    # This manually sets the current tenant for testing purposes. In your app this is handled by the gem.
-    Mongoid::Multitenancy.current_tenant = Client.find_by(:name => 'Perfect Memory') # => <#Client _id:50ca04b86c82bfc125000025, :name: "Perfect Memory">
+```ruby
+ # This manually sets the current tenant for testing purposes. In your app this is handled by the gem.
+Mongoid::Multitenancy.current_tenant = Client.find_by(:name => 'Perfect Memory') # => <#Client _id:50ca04b86c82bfc125000025, :name: "Perfect Memory">
 
-    # All searches are scoped by the tenant, the following searches will only return objects belonging to the current client.
-    Article.all # => all articles where client_id => 50ca04b86c82bfc125000025
+ # All searches are scoped by the tenant, the following searches will only return objects belonging to the current client.
+Article.all # => all articles where client_id => 50ca04b86c82bfc125000025
 
-    # New objects are scoped to the current tenant
-    Article.new(:title => 'New blog') # => <#Article _id: nil, title: 'New blog', :client_id: 50ca04b86c82bfc125000025>
+ # New objects are scoped to the current tenant
+Article.new(:title => 'New blog') # => <#Article _id: nil, title: 'New blog', :client_id: 50ca04b86c82bfc125000025>
 
-    # It can make the tenant field immutable once it is persisted to avoid inconsistency
-    article.persisted? # => true
-    article.client = another_client
-    article.valid? # => false
+ # It can make the tenant field immutable once it is persisted to avoid inconsistency
+article.persisted? # => true
+article.client = another_client
+article.valid? # => false
+```
 
 **Optional tenant**
 
 When setting an optional tenant, for example to allow shared instances between all the tenants, the default scope will return both the tenant and the free-tenant items. That means that using `Article.delete_all` or `Article.destroy_all` will remove the shared items too.
 
-    Article.all # => all articles where client_id.in [50ca04b86c82bfc125000025, nil]
+```ruby
+Article.all # => all articles where client_id.in [50ca04b86c82bfc125000025, nil]
+```
 
 Rails
 -------------------
@@ -112,14 +122,16 @@ If you are using Rails, you may want to set the current tenant at each request.
 
 **Manually set the current tenant in ApplicationController using the host request**
 
-    class ApplicationController < ActionController::Base
-      before_filter :set_current_client
+```ruby
+class ApplicationController < ActionController::Base
+  before_filter :set_current_client
 
-      def set_current_client
-        current_client = Client.find_by_host(request.host)
-        Mongoid::Multitenancy.current_tenant = current_client
-      end
-    end
+  def set_current_client
+    current_client = Client.find_by_host(request.host)
+    Mongoid::Multitenancy.current_tenant = current_client
+  end
+end
+```
 
 Setting the current_tenant yourself requires you to use a before_filter to set the Mongoid::Multitenancy.current_tenant variable.
 
@@ -129,32 +141,36 @@ Mongoid Uniqueness validators
 mongoid-multitenancy will automatically add the tenant foreign key in the scope list for each of uniqueness validators in order
 to avoid to redefine all your validators.
 
-    class Article
-      include Mongoid::Document
-      include Mongoid::Multitenancy::Document
+```ruby
+class Article
+  include Mongoid::Document
+  include Mongoid::Multitenancy::Document
 
-      tenant(:client)
+  tenant(:client)
 
-      field :slug
+  field :slug
 
-      validates_uniqueness_of :slug # => :scope => client_id is added automatically
-    end
+  validates_uniqueness_of :slug # => :scope => client_id is added automatically
+end
+```
 
 Mongoid indexes
 -------------------
 
 mongoid-multitenancy will automatically add the tenant foreign key in all your mongoid indexes to avoid to redefine all your validators.
 
-    class Article
-      include Mongoid::Document
-      include Mongoid::Multitenancy::Document
+```ruby
+class Article
+  include Mongoid::Document
+  include Mongoid::Multitenancy::Document
 
-      tenant(:client)
+  tenant(:client)
 
-      field :title
+  field :title
 
-      index({ :title => 1 }) # => create an index with { :client_id => 1, :title => 1 }
-    end
+  index({ :title => 1 }) # => create an index with { :client_id => 1, :title => 1 }
+end
+```
 
 Author & Credits
 ----------------
