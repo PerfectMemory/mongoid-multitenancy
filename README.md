@@ -8,7 +8,8 @@ In addition, mongoid-multitenancy:
 
 * allows you to set the current tenant
 * redefines some mongoid functions like `index`, `validates_with` and `delete_all` to take in account the multitenancy
-* makes the tenant field immutable once it is persisted
+* allows shared items between the tenants
+* allows you to define an immutable tenant field once it is persisted
 * is thread safe.
 
 Installation
@@ -78,7 +79,8 @@ The association passed to the `tenant` function must be valid.
 
 `tenant` accepts several options:
 
- * :optional : set to true when the tenant can be optional
+ * :optional : set to true when the tenant is optional (default value is `false`)
+ * :immutable : set to true when the tenant field is immutable (default value is `true`)
  * :class_name, etc. : all the other options will be passed to the mongoid relation
 
 Some examples to illustrate this behavior:
@@ -92,7 +94,7 @@ Some examples to illustrate this behavior:
     # New objects are scoped to the current tenant
     Article.new(:title => 'New blog') # => <#Article _id: nil, title: 'New blog', :client_id: 50ca04b86c82bfc125000025>
 
-    # It makes the tenant field immutable once it is persisted to avoid inconsistency
+    # It can make the tenant field immutable once it is persisted to avoid inconsistency
     article.persisted? # => true
     article.client = another_client
     article.valid? # => false
