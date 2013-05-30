@@ -3,35 +3,22 @@ module Mongoid
     module Document
       extend ActiveSupport::Concern
 
-      included do
-        private
-
-        # Check that the tenant foreign key field has not been changed once the object has been persisted
-        def check_tenant_immutability
-          # We check that the tenant has changed and that the old was not nil to avoid after_create callbacks issues.
-          # Indeed in this case, even if the flag is set to persisted, changes have not yet been reset.
-          if attribute_changed?(self.class.tenant_field) and attribute_was(self.class.tenant_field)
-            self.errors.add(self.class.tenant_field, 'is immutable and cannot be updated' )
-          end
-        end
-      end
-
       module ClassMethods
-        # Access to the tenant field
-        attr_reader :tenant_field, :tenant_options
+        attr_accessor :tenant_field
 
         def tenant(association = :account, options={})
-          @tenant_options = { optional: options.delete(:optional), immutable: options.delete(:immutable) { true } }
+          tenant_options = { optional: options.delete(:optional), immutable: options.delete(:immutable) { true } }
           # Setup the association between the class and the tenant class
           # TODO: should index this association if no other indexes are defined => , index: true
           belongs_to association, options
 
           # Get the tenant model and its foreign key
-          fkey = reflect_on_association(association).foreign_key
-          @tenant_field = fkey
+          tenant_field = reflect_on_association(association).foreign_key
+          self.tenant_field = tenant_field
 
           # Validates the presence of the association key
-          validates_presence_of fkey unless @tenant_options[:optional]
+          validates_presence_of tenant_field unless tenant_options[:optional]
+          validates tenant_field, immutable: { field: tenant_field } if tenant_options[:immutable]
 
           # Set the current_tenant on newly created objects
           after_initialize lambda { |m|
@@ -41,17 +28,14 @@ module Mongoid
             true
           }
 
-          # Rewrite accessors to make tenant foreign_key/association immutable
-          validate :check_tenant_immutability, :on => :update if @tenant_options[:immutable]
-
           # Set the default_scope to scope to current tenant
           default_scope lambda {
             criteria = if Multitenancy.current_tenant
-              if self.tenant_options[:optional]
+              if tenant_options[:optional]
                 #any_of({ self.tenant_field => Multitenancy.current_tenant.id }, { self.tenant_field => nil })
-                where({ self.tenant_field.to_sym.in => [Multitenancy.current_tenant.id, nil] })
+                where({ tenant_field.to_sym.in => [Multitenancy.current_tenant.id, nil] })
               else
-                where({ self.tenant_field => Multitenancy.current_tenant.id })
+                where({ tenant_field => Multitenancy.current_tenant.id })
               end
             else
               where(nil)

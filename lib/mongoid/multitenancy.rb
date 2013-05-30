@@ -1,10 +1,10 @@
+require "mongoid"
+require "mongoid/multitenancy/document"
+require "mongoid/multitenancy/version"
+require "mongoid/validators/immutable_validator"
+
 module Mongoid
   module Multitenancy
-    require "mongoid"
-
-    require "mongoid/multitenancy/document"
-    require "mongoid/multitenancy/version"
-
     class << self
 
       # Set the current tenant. Make it Thread aware
