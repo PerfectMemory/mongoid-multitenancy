@@ -136,20 +136,41 @@ describe Article do
     before { Mongoid::Multitenancy.current_tenant = client }
     after { Mongoid::Multitenancy.current_tenant = nil }
 
-    let(:article) { Article.create!(:title => "title X", :slug => "article-x") }
+    context "with :immutable" do
+      let(:item) { Page.create!(:title => "title X", :slug => "article-x") }
 
-    context "when the tenant has not changed" do
-      it 'should be valid' do
-        article.title = "title X (2)"
-        article.should be_valid
+      context "when the tenant has not changed" do
+        it 'should be valid' do
+          item.title = "title X (2)"
+          item.should be_valid
+        end
+      end
+
+      context "when the tenant has changed" do
+        it 'should be invalid' do
+          item.title = "title X (2)"
+          item.client = another_client
+          item.should_not be_valid
+        end
       end
     end
 
-    context "when the tenant has changed" do
-      it 'should be invalid' do
-        article.title = "title X (2)"
-        article.client = another_client
-        article.should_not be_valid
+    context "without :immutable" do
+      let(:item) { Article.create!(:title => "title X", :slug => "article-x") }
+
+      context "when the tenant has not changed" do
+        it 'should be valid' do
+          item.title = "title X (2)"
+          item.should be_valid
+        end
+      end
+
+      context "when the tenant has changed" do
+        it 'should be valid' do
+          item.title = "title X (2)"
+          item.client = another_client
+          item.should be_valid
+        end
       end
     end
 

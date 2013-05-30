@@ -21,7 +21,7 @@ module Mongoid
         attr_reader :tenant_field, :tenant_options
 
         def tenant(association = :account, options={})
-          @tenant_options = { optional: options.delete(:optional) }
+          @tenant_options = { optional: options.delete(:optional), immutable: options.delete(:immutable) { true } }
           # Setup the association between the class and the tenant class
           # TODO: should index this association if no other indexes are defined => , index: true
           belongs_to association, options
@@ -42,7 +42,7 @@ module Mongoid
           }
 
           # Rewrite accessors to make tenant foreign_key/association immutable
-          validate :check_tenant_immutability, :on => :update
+          validate :check_tenant_immutability, :on => :update if @tenant_options[:immutable]
 
           # Set the default_scope to scope to current tenant
           default_scope lambda {

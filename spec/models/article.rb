@@ -2,7 +2,7 @@ class Article
   include Mongoid::Document
   include Mongoid::Multitenancy::Document
 
-  tenant(:client, :class_name => 'Account')
+  tenant(:client, :class_name => 'Account', :immutable => false)
 
   field :slug, :type => String
   field :title, :type => String
