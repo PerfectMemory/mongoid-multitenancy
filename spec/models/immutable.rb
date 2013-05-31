@@ -1,8 +1,8 @@
-class Article
+class Immutable
   include Mongoid::Document
   include Mongoid::Multitenancy::Document
 
-  tenant(:client, :class_name => 'Account', :immutable => false)
+  tenant(:client, :class_name => 'Account', :immutable => true)
 
   field :slug, :type => String
   field :title, :type => String

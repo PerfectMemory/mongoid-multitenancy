@@ -36,3 +36,31 @@ RSpec.configure do |config|
     DatabaseCleaner.clean
   end
 end
+
+shared_examples_for "a tenantable model" do
+
+  it { should belong_to(:client) }
+  it { should validate_uniqueness_of(:slug).scoped_to(:client_id) }
+  it { should have_index_for(:client_id => 1, :title => 1) }
+
+end
+
+shared_examples_for "a tenant validator" do
+  before { Mongoid::Multitenancy.current_tenant = client }
+
+  context "with a valid tenant attribute" do
+    before { item.client = client }
+
+    it "should be valid" do
+      item.should be_valid
+    end
+  end
+
+  context "with an invalid tenant attribute" do
+    before { item.client = another_client }
+
+    it "should be invalid" do
+      item.should_not be_valid
+    end
+  end
+end

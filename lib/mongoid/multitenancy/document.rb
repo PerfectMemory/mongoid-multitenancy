@@ -16,13 +16,12 @@ module Mongoid
           tenant_field = reflect_on_association(association).foreign_key
           self.tenant_field = tenant_field
 
-          # Validates the presence of the association key
-          validates_presence_of tenant_field unless tenant_options[:optional]
-          validates tenant_field, immutable: { field: tenant_field } if tenant_options[:immutable]
+          # Validates the tenant field
+          validates tenant_field, tenant: tenant_options
 
           # Set the current_tenant on newly created objects
-          after_initialize lambda { |m|
-            if Multitenancy.current_tenant #and !self.class.tenant_options[:optional]
+          before_validation lambda { |m|
+            if Multitenancy.current_tenant and !tenant_options[:optional] and m.send(association.to_sym).nil?
               m.send "#{association}=".to_sym, Multitenancy.current_tenant
             end
             true

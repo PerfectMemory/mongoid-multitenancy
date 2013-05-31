@@ -1,7 +1,7 @@
 require "mongoid"
 require "mongoid/multitenancy/document"
 require "mongoid/multitenancy/version"
-require "mongoid/validators/immutable_validator"
+require "mongoid/validators/tenant_validator"
 
 module Mongoid
   module Multitenancy

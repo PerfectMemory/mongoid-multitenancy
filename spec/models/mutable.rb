@@ -1,8 +1,8 @@
-class Page
+class Mutable
   include Mongoid::Document
   include Mongoid::Multitenancy::Document
 
-  tenant(:client, :class_name => 'Account', :optional => true )
+  tenant(:client, :class_name => 'Account', :immutable => false)
 
   field :slug, :type => String
   field :title, :type => String
