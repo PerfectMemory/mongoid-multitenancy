@@ -46,21 +46,43 @@ shared_examples_for "a tenantable model" do
 end
 
 shared_examples_for "a tenant validator" do
-  before { Mongoid::Multitenancy.current_tenant = client }
+  context "within a client context" do
+    before { Mongoid::Multitenancy.current_tenant = client }
 
-  context "with a valid tenant attribute" do
-    before { item.client = client }
+    context "with the client id" do
+      before { item.client = client }
 
-    it "should be valid" do
-      item.should be_valid
+      it "should be valid" do
+        item.should be_valid
+      end
+    end
+
+    context "with another client id" do
+      before { item.client = another_client }
+
+      it "should be invalid" do
+        item.should_not be_valid
+      end
     end
   end
 
-  context "with an invalid tenant attribute" do
-    before { item.client = another_client }
+  context "without a client context" do
+    before { Mongoid::Multitenancy.current_tenant = nil }
 
-    it "should be invalid" do
-      item.should_not be_valid
+    context "with the client id" do
+      before { item.client = client }
+
+      it "should be valid" do
+        item.should be_valid
+      end
+    end
+
+    context "with another client id" do
+      before { item.client = another_client }
+
+      it "should be valid" do
+        item.should be_valid
+      end
     end
   end
 end

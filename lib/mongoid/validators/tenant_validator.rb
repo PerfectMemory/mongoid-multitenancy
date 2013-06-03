@@ -1,20 +1,20 @@
 class TenantValidator < ActiveModel::EachValidator
   def validate_each(object, attribute, value)
+    # Immutable Check
     if options[:immutable]
       if object.send(:attribute_changed?, attribute) and object.send(:attribute_was, attribute)
         object.errors.add(attribute, 'is immutable and cannot be updated')
       end
     end
 
-    authorized_values = []
-    authorized_values << Mongoid::Multitenancy.current_tenant.id if Mongoid::Multitenancy.current_tenant
-
-    if options[:optional]
-      authorized_values << nil
+    # Ownership check
+    if value and Mongoid::Multitenancy.current_tenant and value != Mongoid::Multitenancy.current_tenant.id
+      object.errors.add(attribute, "not authorized")
     end
 
-    unless authorized_values.include?(value)
-      object.errors.add(attribute, 'value not authorized')
+    # Optional Check
+    if !options[:optional] and value.nil?
+      object.errors.add(attribute, 'is mandatory')
     end
   end
 end

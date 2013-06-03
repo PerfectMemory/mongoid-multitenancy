@@ -8,7 +8,7 @@ describe Immutable do
   let(:another_client) { Account.create!(:name => "another client") }
 
   describe "#valid?" do
-    before { Mongoid::Multitenancy.current_tenant = client; item.save! }
+    before { Mongoid::Multitenancy.current_tenant = client; }
     after { Mongoid::Multitenancy.current_tenant = nil }
 
     let(:item) { Immutable.new(:title => "title X", :slug => "page-x") }
@@ -16,6 +16,7 @@ describe Immutable do
     it_behaves_like "a tenant validator"
 
     context "when the tenant has not changed" do
+      before { item.save! }
       it 'should be valid' do
         item.title = "title X (2)"
         item.should be_valid
@@ -23,7 +24,7 @@ describe Immutable do
     end
 
     context "when the tenant has changed" do
-      before { Mongoid::Multitenancy.current_tenant = another_client }
+      before { item.save!; Mongoid::Multitenancy.current_tenant = another_client }
       it 'should not be valid' do
         item.client = another_client
         item.should_not be_valid
