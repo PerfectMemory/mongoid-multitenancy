@@ -7,6 +7,7 @@ module Mongoid
         attr_accessor :tenant_field
 
         def tenant(association = :account, options={})
+          original_options = options.clone
           tenant_options = { optional: options.delete(:optional), immutable: options.delete(:immutable) { true } }
           # Setup the association between the class and the tenant class
           # TODO: should index this association if no other indexes are defined => , index: true
@@ -40,6 +41,10 @@ module Mongoid
               where(nil)
             end
           }
+
+          self.define_singleton_method(:inherited) do |child|
+            child.tenant association, original_options
+          end
         end
 
         # Redefine 'validates_with' to add the tenant scope when using a UniquenessValidator
