@@ -44,6 +44,7 @@ module Mongoid
 
           self.define_singleton_method(:inherited) do |child|
             child.tenant association, original_options
+            super(child)
           end
         end
 
