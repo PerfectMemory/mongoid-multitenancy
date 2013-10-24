@@ -5,14 +5,13 @@ describe 'Inheritance' do
   let(:client) { Account.create!(:name => "client") }
 
   describe "class" do
-    before do
-      Mongoid::Multitenancy.current_tenant = client
-      MutableChild.create :title => "title X", :slug => "page-x"
-    end
-    after { Mongoid::Multitenancy.current_tenant = nil }
-
-    it 'should be valid' do
+    it 'should use inheritance pattern' do
+      MutableChild.create!(:title => "title X", :slug => "page-x")
       expect(Mutable.last).to be_a MutableChild
+    end
+
+    it 'should keep options' do
+      AnotherMutableChild.new(:title => "title X", :slug => "page-x").should be_valid
     end
   end
 end
