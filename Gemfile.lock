@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    mongoid-multitenancy (0.3.3)
+    mongoid-multitenancy (0.3.4)
       mongoid (~> 3)
 
 GEM
