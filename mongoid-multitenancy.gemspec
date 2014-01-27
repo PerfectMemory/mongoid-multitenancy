@@ -22,5 +22,4 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency('yard', '~> 0.8')
   gem.add_development_dependency('mongoid-rspec', '~> 1.5')
   gem.add_development_dependency('database_cleaner', '~> 1.0')
-  gem.add_development_dependency('redcarpet', '~> 2.2')
 end

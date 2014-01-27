@@ -41,7 +41,6 @@ GEM
     optionable (0.2.0)
     origin (2.1.0)
     rake (10.1.1)
-    redcarpet (2.3.0)
     rspec (2.14.1)
       rspec-core (~> 2.14.0)
       rspec-expectations (~> 2.14.0)
@@ -64,6 +63,5 @@ DEPENDENCIES
   mongoid-multitenancy!
   mongoid-rspec (~> 1.5)
   rake (~> 10.0)
-  redcarpet (~> 2.2)
   rspec (~> 2.12)
   yard (~> 0.8)
