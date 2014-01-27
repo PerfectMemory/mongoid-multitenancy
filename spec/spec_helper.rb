@@ -11,6 +11,8 @@ require 'mongoid-multitenancy'
 require 'database_cleaner'
 require 'mongoid-rspec'
 
+require_relative 'support/mongoid'
+
 Dir["#{MODELS}/*.rb"].each { |f| require f }
 
 Mongoid.configure do |config|

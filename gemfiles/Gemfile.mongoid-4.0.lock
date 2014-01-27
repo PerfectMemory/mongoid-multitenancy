@@ -1,5 +1,5 @@
 PATH
-  remote: .
+  remote: ..
   specs:
     mongoid-multitenancy (0.3.4)
       mongoid (>= 3.0)
