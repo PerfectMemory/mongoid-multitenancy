@@ -1,9 +1,13 @@
-$LOAD_PATH.unshift(File.dirname(__FILE__))
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), "..", "lib"))
 MODELS = File.join(File.dirname(__FILE__), "models")
 
-require 'rubygems'
-require 'bundler/setup'
+require 'simplecov'
+require 'coveralls'
+
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
+  SimpleCov::Formatter::HTMLFormatter,
+  Coveralls::SimpleCov::Formatter
+]
+SimpleCov.start
 
 require 'rspec'
 require 'mongoid'
