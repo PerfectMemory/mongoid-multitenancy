@@ -157,18 +157,42 @@ end
 Mongoid indexes
 -------------------
 
-mongoid-multitenancy will automatically add the tenant foreign key in all your mongoid indexes to avoid to redefine all your validators.
+mongoid-multitenancy automatically adds the tenant foreign key in all your mongoid indexes to avoid to redefine all your validators. If you prefer to define manually the indexes, you can use the option `full_indexes: false`.
+
+To create a single index on the tenant field, you can use the option `index: true` like any `belongs_to` declaration (false by default)
+
+On the example below, only one indexe will be created:
+
+* { 'title_id' => 1, 'client_id' => 1 }
 
 ```ruby
 class Article
   include Mongoid::Document
   include Mongoid::Multitenancy::Document
 
-  tenant(:client)
+  tenant :client, full_indexes: true
 
   field :title
 
-  index({ :title => 1 }) # => create an index with { :client_id => 1, :title => 1 }
+  index({ :title => 1 })
+end
+```
+
+On the example below, 2 indexes will be created:
+
+* { 'client_id' => 1 }
+* { 'title_id' => 1 }
+
+```ruby
+class Article
+  include Mongoid::Document
+  include Mongoid::Multitenancy::Document
+
+  tenant :client, index: true
+
+  field :title
+
+  index({ :title => 1 })
 end
 ```
 
