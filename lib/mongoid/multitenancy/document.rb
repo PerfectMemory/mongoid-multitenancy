@@ -4,12 +4,14 @@ module Mongoid
       extend ActiveSupport::Concern
 
       module ClassMethods
-        attr_accessor :tenant_field
+        attr_accessor :tenant_field, :full_indexes
 
-        def tenant(association = :account, options={})
+        def tenant(association = :account, options = {})
+          options = { full_indexes: true }.merge(options)
           active_model_options = options.clone
           to_index = active_model_options.delete(:index)
           tenant_options = { optional: active_model_options.delete(:optional), immutable: active_model_options.delete(:immutable) { true } }
+          self.full_indexes = active_model_options.delete(:full_indexes)
 
           # Setup the association between the class and the tenant class
           belongs_to association, active_model_options
@@ -49,7 +51,7 @@ module Mongoid
           end
 
           if to_index
-            index({}, { background: true })
+            index({self.tenant_field => 1}, { background: true })
           end
         end
 
@@ -69,7 +71,7 @@ module Mongoid
 
         # Redefine 'index' to include the tenant field in first position
         def index(spec, options = nil)
-          spec = { self.tenant_field => 1 }.merge(spec)
+          spec = { self.tenant_field => 1 }.merge(spec) if self.full_indexes
           super(spec, options)
         end
 

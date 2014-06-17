@@ -22,4 +22,16 @@ describe 'tenant' do
     end
   end
 
+  context 'with full_indexes: true' do
+    it 'add the tenant field on each index' do
+      Immutable.should have_index_for(:client_id => 1, :title => 1)
+    end
+  end
+
+  context 'with full_indexes: false' do
+    it 'does not add the tenant field on each index' do
+      Indexable.should_not have_index_for(:client_id => 1, :title => 1)
+    end
+  end
+
 end
