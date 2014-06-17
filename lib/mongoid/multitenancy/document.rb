@@ -8,9 +8,10 @@ module Mongoid
 
         def tenant(association = :account, options={})
           active_model_options = options.clone
+          to_index = active_model_options.delete(:index)
           tenant_options = { optional: active_model_options.delete(:optional), immutable: active_model_options.delete(:immutable) { true } }
+
           # Setup the association between the class and the tenant class
-          # TODO: should index this association if no other indexes are defined => , index: true
           belongs_to association, active_model_options
 
           # Get the tenant model and its foreign key
@@ -45,6 +46,10 @@ module Mongoid
           self.define_singleton_method(:inherited) do |child|
             child.tenant association, options
             super(child)
+          end
+
+          if to_index
+            index({}, { background: true })
           end
         end
 
