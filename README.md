@@ -115,6 +115,52 @@ When setting an optional tenant, for example to allow shared instances between a
 Article.all # => all articles where client_id.in [50ca04b86c82bfc125000025, nil]
 ```
 
+**Scoping searches to multiple tenants**
+
+Sometimes it might be needed to read documents belonging to different tenants in a single call.
+For example consider adding an `Agent` model to the above use-case of `Client` and `Article`.
+
+```ruby
+class Agent
+  include Mongoid::Document
+
+  has_and_belongs_to_many clients, :inverse_of => nil
+
+  field :name, :type => String
+end
+```
+
+So an agent manages multiple clients, and might want to see all the articles of all it's clients.
+This cannot be achieved using the `current_tenant` call. Instead We can use `set_tenants` as follows
+
+```ruby
+Mongoid::Multitenancy.set_tenants client_instance1, client_instance2, client_instance3, ...
+```
+
+OR
+
+```ruby
+Mongoid::Multitenancy.set_tenants client_instance1, agent_instance.clients
+```
+
+The first argument to `set_tenants` is set as the current_tenant.
+The combined list of the remaining tenants + the current_tenant are used for scoping purposes.
+This means that any new article created will belong to to the first tenant that was set.
+But default_scope will be set to the entire list of tenants and will return documents belonging
+to all of them. **Note** that since the default_scope is defined to multiple tenants, `delete_all`
+and `destroy_all` will destroy all the documents belonging to any of the tenants in our list.
+
+```ruby
+ # Set current tenant to the managed client by the name `Perfect Memory` and set scope to all managed clients
+Mongoid::Multitenancy.set_tenants agent.clients.find_by(:name => 'Perfect Memory'), agent.clients
+
+ # All searches are scoped by the entire list of tenants.
+Article.all # => all articles where client_id in [50ca04b86c82bfc125000025, 50ca04b86c82bfc125000026, 50ca04b86c82bfc125000027, 50ca04b86c82bfc125000028]
+
+ # New objects are scoped to the current tenant
+Article.new(:title => 'New blog') # => <#Article _id: nil, title: 'New blog', :client_id: 50ca04b86c82bfc125000025>
+```
+
 Rails
 -------------------
 

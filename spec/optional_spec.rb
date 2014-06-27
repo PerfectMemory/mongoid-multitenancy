@@ -23,6 +23,15 @@ describe Optional do
       end
     end
 
+    context "with multiple scoping tenants" do
+      before { Mongoid::Multitenancy.set_tenants client, another_client  }
+      after { Mongoid::Multitenancy.current_tenant = nil }
+
+      it "should filter on all scoping tenants / free-tenant items" do
+        Optional.all.to_a.should =~ [@itemX, @itemY, @itemC]
+      end
+    end
+
     context "without a current tenant" do
       before { Mongoid::Multitenancy.current_tenant = nil }
 
@@ -43,6 +52,16 @@ describe Optional do
       it "should only delete the current tenant / free-tenant items" do
         Mongoid::Multitenancy.with_tenant(another_client) { Optional.delete_all }
         Optional.all.to_a.should =~ [@itemX]
+      end
+    end
+
+    context "with multiple scoping tenants" do
+      before { Mongoid::Multitenancy.set_tenants client, another_client  }
+      after { Mongoid::Multitenancy.current_tenant = nil }
+
+      it "should delete for all scoping tenants" do
+        Mandatory.delete_all
+        Mandatory.all.to_a.should be_empty
       end
     end
 
