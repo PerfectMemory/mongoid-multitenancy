@@ -33,12 +33,11 @@ module Mongoid
 
           # Set the default_scope to scope to current tenant
           default_scope lambda {
-            criteria = if Multitenancy.current_tenant
+            criteria = if Multitenancy.scoping_tenants
               if tenant_options[:optional]
-                #any_of({ self.tenant_field => Multitenancy.current_tenant.id }, { self.tenant_field => nil })
-                where({ tenant_field.to_sym.in => [Multitenancy.current_tenant.id, nil] })
+                where({ tenant_field.to_sym.in => (Multitenancy.scoping_tenants + [nil]) })
               else
-                where({ tenant_field => Multitenancy.current_tenant.id })
+                where({ tenant_field.to_sym.in => Multitenancy.scoping_tenants })
               end
             else
               where(nil)
