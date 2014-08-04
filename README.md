@@ -99,7 +99,8 @@ Mongoid::Multitenancy.current_tenant = Client.find_by(:name => 'Perfect Memory')
 Article.all # => all articles where client_id => 50ca04b86c82bfc125000025
 
  # New objects are scoped to the current tenant
-Article.new(:title => 'New blog') # => <#Article _id: nil, title: 'New blog', :client_id: 50ca04b86c82bfc125000025>
+article = Article.new(:title => 'New blog')
+article.save # => <#Article _id: 50ca04b86c82bfc125000044, title: 'New blog', client_id: 50ca04b86c82bfc125000025>
 
  # It can make the tenant field immutable once it is persisted to avoid inconsistency
 article.persisted? # => true
@@ -109,10 +110,27 @@ article.valid? # => false
 
 **Optional tenant**
 
-When setting an optional tenant, for example to allow shared instances between all the tenants, the default scope will return both the tenant and the free-tenant items. That means that using `Article.delete_all` or `Article.destroy_all` will remove the shared items too.
+When setting an optional tenant, for example to allow shared instances between all the tenants, the default scope will return both the tenant and the free-tenant items. That means that using `Article.delete_all` or `Article.destroy_all` will **remove the shared items too**. And that means too that **the tenant must be set manually**.
 
 ```ruby
-Article.all # => all articles where client_id.in [50ca04b86c82bfc125000025, nil]
+class Article
+  include Mongoid::Document
+  include Mongoid::Multitenancy::Document
+
+  tenant(:client, optional: true)
+
+  field :title, :type => String
+end
+
+Mongoid::Multitenancy.with_tenant(client_instance) do
+  Article.all # => all articles where client_id.in [50ca04b86c82bfc125000025, nil]
+  article = Article.new(:title => 'New article')
+  article.save # => <#Article _id: 50ca04b86c82bfc125000044, title: 'New blog', client_id: nil>
+
+  # tenant needs to be set manually
+  article.tenant = client_instance
+  article.save => <#Article _id: 50ca04b86c82bfc125000044, title: 'New blog', client_id: 50ca04b86c82bfc125000025>
+end
 ```
 
 Rails
