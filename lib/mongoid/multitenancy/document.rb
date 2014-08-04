@@ -63,7 +63,7 @@ module Mongoid
             Validations::UniquenessValidator
           end
 
-          if args.first == validator
+          if args.first.ancestors.include?(validator)
             args.last[:scope] = Array(args.last[:scope]) << self.tenant_field
           end
           super(*args, &block)
