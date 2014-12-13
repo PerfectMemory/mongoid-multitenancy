@@ -74,8 +74,8 @@ describe Mandatory do
         item.client.should be_nil
       end
 
-      it "should be invalid" do
-        item.should_not be_valid
+      it "should be valid" do
+        item.should be_valid
       end
     end
   end
