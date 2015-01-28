@@ -41,7 +41,11 @@ module Mongoid
                 where({ tenant_field => Multitenancy.current_tenant.id })
               end
             else
-              where(nil)
+              if tenant_options[:optional]
+                where(nil)
+              else
+                where({ tenant_field.to_sym.exists => false })
+              end
             end
           }
 
