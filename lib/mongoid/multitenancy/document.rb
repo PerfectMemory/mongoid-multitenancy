@@ -55,7 +55,7 @@ module Mongoid
           end
 
           if to_index
-            index({self.tenant_field => 1}, { background: true })
+            index({self.tenant_field => 1}, { background: true, sparse: true })
           end
         end
 
