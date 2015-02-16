@@ -21,7 +21,7 @@ module Mongoid
           self.tenant_field = tenant_field
 
           # Validates the tenant field
-          validates tenant_field, tenant: tenant_options
+          validates tenant_field, tenant: tenant_options, if: lambda { Multitenancy.current_tenant }
 
           # Set the current_tenant on newly created objects
           before_validation lambda { |m|
@@ -41,7 +41,11 @@ module Mongoid
                 where({ tenant_field => Multitenancy.current_tenant.id })
               end
             else
-              where(nil)
+              if tenant_options[:optional]
+                where(nil)
+              else
+                where({ tenant_field.to_sym.exists => false })
+              end
             end
           }
 
@@ -51,7 +55,7 @@ module Mongoid
           end
 
           if to_index
-            index({self.tenant_field => 1}, { background: true })
+            index({self.tenant_field => 1}, { background: true, sparse: true })
           end
         end
 
