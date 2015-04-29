@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'mongoid', '~> 4.0.alpha'
+gem 'mongoid', '~> 4.0'
 
 gem 'rake', '~> 10.0'
 
