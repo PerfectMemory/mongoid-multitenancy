@@ -6,31 +6,28 @@ module Mongoid
       module ClassMethods
         attr_accessor :tenant_field, :full_indexes
 
+        MULTITENANCY_OPTIONS = [:optional, :immutable, :full_indexes, :index]
+
         def tenant(association = :account, options = {})
-          options = { full_indexes: true }.merge(options)
-          active_model_options = options.clone
-          to_index = active_model_options.delete(:index)
-          tenant_options = { optional: active_model_options.delete(:optional), immutable: active_model_options.delete(:immutable) { true } }
-          self.full_indexes = active_model_options.delete(:full_indexes)
+          options = { full_indexes: true, immutable: true }.merge(options)
 
           # Setup the association between the class and the tenant class
-          belongs_to association, active_model_options
+          belongs_to association, extract_association_options(options)
 
           # Get the tenant model and its foreign key
-          tenant_field = reflect_on_association(association).foreign_key
-          self.tenant_field = tenant_field
+          self.tenant_field = reflect_on_association(association).foreign_key
+          self.full_indexes = options[:full_indexes]
 
           # Validates the tenant field
-          validates tenant_field, tenant: tenant_options
+          validates tenant_field, tenant: options
 
           # Set the default_scope to scope to current tenant
           default_scope lambda {
-            criteria = if Multitenancy.current_tenant
-              if tenant_options[:optional]
-                #any_of({ self.tenant_field => Multitenancy.current_tenant.id }, { self.tenant_field => nil })
-                where({ tenant_field.to_sym.in => [Multitenancy.current_tenant.id, nil] })
+            if Multitenancy.current_tenant
+              if options[:optional]
+                where(self.tenant_field.to_sym.in => [Multitenancy.current_tenant.id, nil])
               else
-                where({ tenant_field => Multitenancy.current_tenant.id })
+                where(self.tenant_field => Multitenancy.current_tenant.id)
               end
             else
               where(nil)
@@ -42,7 +39,7 @@ module Mongoid
             super(child)
           end
 
-          if to_index
+          if options[:index]
             index({self.tenant_field => 1}, { background: true })
           end
         end
@@ -70,6 +67,18 @@ module Mongoid
         # Redefine 'delete_all' to take in account the default scope
         def delete_all(conditions = nil)
           scoped.where(conditions).delete
+        end
+
+        private
+
+        def extract_association_options(options)
+          new_options = {}
+
+          options.each do |k, v|
+            new_options[k] = v unless MULTITENANCY_OPTIONS.include?(k)
+          end
+
+          new_options
         end
       end
     end
