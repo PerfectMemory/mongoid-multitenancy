@@ -23,14 +23,6 @@ module Mongoid
           # Validates the tenant field
           validates tenant_field, tenant: tenant_options
 
-          # Set the current_tenant on newly created objects
-          before_validation lambda { |m|
-            if Multitenancy.current_tenant and !tenant_options[:optional] and m.send(association.to_sym).nil?
-              m.send "#{association}=".to_sym, Multitenancy.current_tenant
-            end
-            true
-          }
-
           # Set the default_scope to scope to current tenant
           default_scope lambda {
             criteria = if Multitenancy.current_tenant
