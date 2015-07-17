@@ -46,7 +46,6 @@ end
 shared_examples_for "a tenantable model" do
 
   it { should belong_to(:client) }
-  it { should validate_uniqueness_of(:slug).scoped_to(:client_id) }
   it { should have_index_for(:client_id => 1, :title => 1) }
 
 end

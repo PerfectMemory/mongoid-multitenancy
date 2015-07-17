@@ -4,7 +4,7 @@ module Mongoid
       extend ActiveSupport::Concern
 
       module ClassMethods
-        attr_accessor :tenant_field, :full_indexes
+        attr_accessor :tenant_field, :tenant_options
 
         MULTITENANCY_OPTIONS = [:optional, :immutable, :full_indexes, :index]
 
@@ -16,7 +16,7 @@ module Mongoid
 
           # Get the tenant model and its foreign key
           self.tenant_field = reflect_on_association(association).foreign_key
-          self.full_indexes = options[:full_indexes]
+          self.tenant_options = extract_tenant_options(options)
 
           # Validates the tenant field
           validates tenant_field, tenant: options
@@ -46,21 +46,24 @@ module Mongoid
 
         # Redefine 'validates_with' to add the tenant scope when using a UniquenessValidator
         def validates_with(*args, &block)
-          validator = if Mongoid::Multitenancy.mongoid4?
-            Validatable::UniquenessValidator
-          else
-            Validations::UniquenessValidator
+          if !self.tenant_options[:optional]
+            validator = if Mongoid::Multitenancy.mongoid4?
+              Validatable::UniquenessValidator
+            else
+              Validations::UniquenessValidator
+            end
+
+            if args.first.ancestors.include?(validator)
+              args.last[:scope] = Array(args.last[:scope]) << self.tenant_field
+            end
           end
 
-          if args.first.ancestors.include?(validator)
-            args.last[:scope] = Array(args.last[:scope]) << self.tenant_field
-          end
           super(*args, &block)
         end
 
         # Redefine 'index' to include the tenant field in first position
         def index(spec, options = nil)
-          spec = { self.tenant_field => 1 }.merge(spec) if self.full_indexes
+          spec = { self.tenant_field => 1 }.merge(spec) if self.tenant_options[:full_indexes]
           super(spec, options)
         end
 
@@ -76,6 +79,16 @@ module Mongoid
 
           options.each do |k, v|
             new_options[k] = v unless MULTITENANCY_OPTIONS.include?(k)
+          end
+
+          new_options
+        end
+
+        def extract_tenant_options(options)
+          new_options = {}
+
+          options.each do |k, v|
+            new_options[k] = v if MULTITENANCY_OPTIONS.include?(k)
           end
 
           new_options

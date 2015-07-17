@@ -3,6 +3,7 @@ require 'spec_helper'
 describe Mandatory do
 
   it_behaves_like "a tenantable model"
+  it { should validate_uniqueness_of(:slug).scoped_to(:client_id) }
 
   let(:client) { Account.create!(:name => "client") }
   let(:another_client) { Account.create!(:name => "another client") }
