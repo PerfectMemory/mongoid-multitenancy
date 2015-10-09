@@ -3,80 +3,89 @@ require 'spec_helper'
 describe Mandatory do
 
   it_behaves_like "a tenantable model"
-  it { should validate_uniqueness_of(:slug).scoped_to(:client_id) }
+  it { is_expected.to validate_uniqueness_of(:slug).scoped_to(:client_id) }
 
-  let(:client) { Account.create!(:name => "client") }
-  let(:another_client) { Account.create!(:name => "another client") }
+  let(:client) do
+    Account.create!(:name => "client")
+  end
+
+  let(:another_client) do
+    Account.create!(:name => "another client")
+  end
 
   describe ".default_scope" do
-    before {
+    before do
       Mongoid::Multitenancy.with_tenant(client) { @itemX = Mandatory.create!(:title => "title X", :slug => "article-x") }
       Mongoid::Multitenancy.with_tenant(another_client) { @itemY = Mandatory.create!(:title => "title Y", :slug => "article-y") }
-    }
+    end
 
     context "with a current tenant" do
-      before { Mongoid::Multitenancy.current_tenant = another_client }
-      after { Mongoid::Multitenancy.current_tenant = nil }
+      before do
+        Mongoid::Multitenancy.current_tenant = another_client
+      end
 
-      it "should filter on the current tenant" do
-        Mandatory.all.to_a.should =~ [@itemY]
+      it "filters on the current tenant" do
+        expect(Mandatory.all.to_a).to match_array [@itemY]
       end
     end
 
     context "without a current tenant" do
-      before { Mongoid::Multitenancy.current_tenant = nil }
+      before do
+        Mongoid::Multitenancy.current_tenant = nil
+      end
 
-      it "should not filter on any tenant" do
-        Mandatory.all.to_a.should =~ [@itemX, @itemY]
+      it "does not filter on any tenant" do
+        expect(Mandatory.all.to_a).to match_array [@itemX, @itemY]
       end
     end
   end
 
   describe "#delete_all" do
-    before {
+    before do
       Mongoid::Multitenancy.with_tenant(client) { @itemX = Mandatory.create!(:title => "title X", :slug => "article-x") }
       Mongoid::Multitenancy.with_tenant(another_client) { @itemY = Mandatory.create!(:title => "title Y", :slug => "article-y") }
-    }
+    end
 
     context "with a current tenant" do
-      it "should only delete the current tenant" do
+      it "only deletes the current tenant" do
         Mongoid::Multitenancy.with_tenant(another_client) { Mandatory.delete_all }
-        Mandatory.all.to_a.should =~ [@itemX]
+        expect(Mandatory.all.to_a).to match_array [@itemX]
       end
     end
 
     context "without a current tenant" do
-      it "should delete all the items" do
+      it "deletes all the items" do
         Mandatory.delete_all
-        Mandatory.all.to_a.should be_empty
+        expect(Mandatory.all.to_a).to be_empty
       end
     end
   end
 
   describe "#valid?" do
-    after { Mongoid::Multitenancy.current_tenant = nil }
-
-    let(:item) { Mandatory.new(:title => "title X", :slug => "page-x") }
+    let(:item) do
+      Mandatory.new(:title => "title X", :slug => "page-x")
+    end
 
     it_behaves_like "a tenant validator"
 
     context "with a current tenant" do
-      before { Mongoid::Multitenancy.current_tenant = client }
+      before do
+        Mongoid::Multitenancy.current_tenant = client
+      end
 
-      it "should set the client field" do
+      it "sets the client field" do
         item.valid?
-        item.client.should eq client
+        expect(item.client).to eq client
       end
     end
 
     context "without a current tenant" do
-      it "should not set the client field" do
-        item.valid?
-        item.client.should be_nil
+      it "does not set the client field" do
+        expect(item.client).to be_nil
       end
 
-      it "should be invalid" do
-        item.should_not be_valid
+      it "is invalid" do
+        expect(item).not_to be_valid
       end
     end
   end

@@ -1,22 +1,28 @@
 require "spec_helper"
 
 describe Mongoid::Multitenancy do
-  let(:client) { Account.create!(:name => "client") }
-  let(:another_client) { Account.create!(:name => "another client") }
+  let(:client) do
+    Account.create!(:name => "client")
+  end
 
-  before { Mongoid::Multitenancy.current_tenant = client }
-  after { Mongoid::Multitenancy.current_tenant = nil }
+  let(:another_client) do
+    Account.create!(:name => "another client")
+  end
+
+  before do
+    Mongoid::Multitenancy.current_tenant = client
+  end
 
   describe ".with_tenant" do
-    it "should change temporary the current tenant within the block" do
+    it "changes temporary the current tenant within the block" do
       Mongoid::Multitenancy.with_tenant(another_client) do
-        Mongoid::Multitenancy.current_tenant.should == another_client
+        expect(Mongoid::Multitenancy.current_tenant).to eq another_client
       end
     end
 
-    it "should have restored the current tenant after the block" do
+    it "restores the current tenant after the block" do
       Mongoid::Multitenancy.with_tenant(another_client) do ; end
-      Mongoid::Multitenancy.current_tenant.should == client
+      expect(Mongoid::Multitenancy.current_tenant).to eq client
     end
   end
 end
