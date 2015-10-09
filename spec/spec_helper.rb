@@ -12,11 +12,16 @@ SimpleCov.start
 require 'rspec'
 require 'mongoid'
 require 'mongoid-multitenancy'
-require 'database_cleaner'
 require 'mongoid-rspec'
 
-require_relative 'support/mongoid'
+if Mongoid::VERSION.start_with? '5'
+  Mongo::Logger.logger.level = ::Logger::FATAL
+elsif Mongoid::VERSION.start_with? '4'
+  Moped.logger = nil
+end
+
 require_relative 'support/shared_examples'
+require_relative 'support/database_cleaner'
 
 Dir["#{MODELS}/*.rb"].each { |f| require f }
 
@@ -24,9 +29,7 @@ Mongoid.configure do |config|
   config.connect_to "mongoid_multitenancy"
 end
 
-Mongoid.logger = Logger.new($stdout)
-
-DatabaseCleaner.orm = "mongoid"
+Mongoid.logger = nil
 
 RSpec.configure do |config|
   config.include Mongoid::Matchers
@@ -35,16 +38,11 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 
-  config.before(:all) do
-    DatabaseCleaner.strategy = :truncation
-  end
-
   config.before(:each) do
-    DatabaseCleaner.start
+    DatabaseCleaner.clean
   end
 
   config.after(:each) do
-    DatabaseCleaner.clean
     Mongoid::Multitenancy.current_tenant = nil
   end
 end

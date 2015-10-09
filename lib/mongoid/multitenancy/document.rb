@@ -47,13 +47,7 @@ module Mongoid
         # Redefine 'validates_with' to add the tenant scope when using a UniquenessValidator
         def validates_with(*args, &block)
           if !self.tenant_options[:optional]
-            validator = if Mongoid::Multitenancy.mongoid4?
-              Validatable::UniquenessValidator
-            else
-              Validations::UniquenessValidator
-            end
-
-            if args.first.ancestors.include?(validator)
+            if args.first.ancestors.include?(Validatable::UniquenessValidator)
               args.last[:scope] = Array(args.last[:scope]) << self.tenant_field
             end
           end

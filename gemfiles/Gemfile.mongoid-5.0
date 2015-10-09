@@ -1,15 +1,14 @@
 source 'https://rubygems.org'
 
-gem 'mongoid', '~> 3.0'
+gem 'mongoid', '~> 5.0'
 
 gem 'rake', '~> 10.0'
 
 group :test do
   gem 'coveralls', :require => false
-  gem 'rspec', '~> 2.12'
+  gem 'rspec', '~> 3.1'
   gem 'yard', '~> 0.8'
-  gem 'mongoid-rspec', '~> 1.5'
-  gem 'database_cleaner', '~> 1.0'
+  gem 'mongoid-rspec', '~> 3.0'
 end
 
 # Specify your gem's dependencies in mongoid-multitenancy.gemspec
