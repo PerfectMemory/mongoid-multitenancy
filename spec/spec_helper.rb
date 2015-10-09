@@ -22,6 +22,7 @@ end
 
 require_relative 'support/shared_examples'
 require_relative 'support/database_cleaner'
+require_relative 'support/mongoid_matchers'
 
 Dir["#{MODELS}/*.rb"].each { |f| require f }
 

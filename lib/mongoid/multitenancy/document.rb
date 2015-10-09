@@ -10,21 +10,22 @@ module Mongoid
 
         def tenant(association = :account, options = {})
           options = { full_indexes: true, immutable: true }.merge(options)
+          assoc_options, multitenant_options = build_options(options)
 
           # Setup the association between the class and the tenant class
-          belongs_to association, extract_association_options(options)
+          belongs_to association, assoc_options
 
           # Get the tenant model and its foreign key
           self.tenant_field = reflect_on_association(association).foreign_key
-          self.tenant_options = extract_tenant_options(options)
+          self.tenant_options = multitenant_options
 
           # Validates the tenant field
-          validates tenant_field, tenant: options
+          validates_tenancy_of tenant_field, multitenant_options
 
           # Set the default_scope to scope to current tenant
           default_scope lambda {
             if Multitenancy.current_tenant
-              if options[:optional]
+              if multitenant_options[:optional]
                 where(self.tenant_field.to_sym.in => [Multitenancy.current_tenant.id, nil])
               else
                 where(self.tenant_field => Multitenancy.current_tenant.id)
@@ -39,20 +40,45 @@ module Mongoid
             super(child)
           end
 
-          if options[:index]
+          if multitenant_options[:index]
             index({self.tenant_field => 1}, { background: true })
           end
         end
 
-        # Redefine 'validates_with' to add the tenant scope when using a UniquenessValidator
-        def validates_with(*args, &block)
-          if !self.tenant_options[:optional]
-            if args.first.ancestors.include?(Validatable::UniquenessValidator)
-              args.last[:scope] = Array(args.last[:scope]) << self.tenant_field
-            end
-          end
+        # Validates whether or not a field is unique against the documents in the
+        # database.
+        #
+        # @example
+        #
+        #   class Person
+        #     include Mongoid::Document
+        #     include Mongoid::Multitenancy::Document
+        #     field :title
+        #
+        #     validates_tenant_uniqueness_of :title
+        #   end
+        #
+        # @param [ Array ] *args The arguments to pass to the validator.
+        def validates_tenant_uniqueness_of(*args)
+          validates_with(TenantUniquenessValidator, _merge_attributes(args))
+        end
 
-          super(*args, &block)
+        # Validates whether or not a tenant field is correct.
+        #
+        # @example Define the tenant validator
+        #
+        #   class Person
+        #     include Mongoid::Document
+        #     include Mongoid::Multitenancy::Document
+        #     field :title
+        #     tenant :client
+        #
+        #     validates_tenant_of :client
+        #   end
+        #
+        # @param [ Array ] *args The arguments to pass to the validator.
+        def validates_tenancy_of(*args)
+          validates_with(TenancyValidator, _merge_attributes(args))
         end
 
         # Redefine 'index' to include the tenant field in first position
@@ -68,24 +94,20 @@ module Mongoid
 
         private
 
-        def extract_association_options(options)
-          new_options = {}
+        # @private
+        def build_options(options)
+          assoc_options = {}
+          multitenant_options = {}
 
           options.each do |k, v|
-            new_options[k] = v unless MULTITENANCY_OPTIONS.include?(k)
+            if MULTITENANCY_OPTIONS.include?(k)
+              multitenant_options[k] = v
+            else
+              assoc_options[k] = v
+            end
           end
 
-          new_options
-        end
-
-        def extract_tenant_options(options)
-          new_options = {}
-
-          options.each do |k, v|
-            new_options[k] = v if MULTITENANCY_OPTIONS.include?(k)
-          end
-
-          new_options
+          [assoc_options, multitenant_options]
         end
       end
     end

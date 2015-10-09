@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Optional do
 
   it_behaves_like "a tenantable model"
-  it { is_expected.to validate_uniqueness_of(:slug) }
+  it { is_expected.to validate_tenant_uniqueness_of(:slug) }
 
   let(:client) do
     Account.create!(:name => "client")
@@ -79,6 +79,27 @@ describe Optional do
         item.valid?
         expect(item.client).to be_nil
       end
+
+      context "with a uniqueness constraint" do
+        let(:duplicate) do
+          Optional.new(:title => "title Y", :slug => "page-x", :client => another_client)
+        end
+
+        before do
+          item.client = client
+          item.save!
+        end
+
+        it 'does not allow duplicates on the same tenant' do
+          expect(duplicate).not_to be_valid
+        end
+
+        it 'allow duplicates on a different same tenant' do
+          Mongoid::Multitenancy.with_tenant(another_client) do
+            expect(duplicate).to be_valid
+          end
+        end
+      end
     end
 
     context "without a current tenant" do
@@ -89,6 +110,22 @@ describe Optional do
 
       it "is valid" do
         expect(item).to be_valid
+      end
+
+      context "with a uniqueness constraint" do
+        let(:duplicate) do
+          Optional.new(:title => "title Y", :slug => "page-x", :client => another_client)
+        end
+
+        before do
+          item.save!
+        end
+
+        it 'does not allow duplicates on any tenant' do
+          Mongoid::Multitenancy.with_tenant(another_client) do
+            expect(duplicate).not_to be_valid
+          end
+        end
       end
     end
   end

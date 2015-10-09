@@ -156,19 +156,43 @@ Setting the current_tenant yourself requires you to use a before_filter to set t
 Mongoid Uniqueness validators
 -------------------
 
-mongoid-multitenancy will automatically add the tenant foreign key in the scope list for each of uniqueness validators in order
-to avoid to redefine all your validators.
+mongoid-multitenancy brings a TenantUniqueness validator that will, depending on the tenant options, check that your uniqueness
+constraints are respected:
+
+* When used with a *mandatory* tenant, the uniqueness constraint is scoped to the current client.
+
+In the following case, 2 articles can have the same slug if they belongs to 2 different clients.
 
 ```ruby
 class Article
   include Mongoid::Document
   include Mongoid::Multitenancy::Document
 
-  tenant(:client)
+  tenant :client
 
   field :slug
 
-  validates_uniqueness_of :slug # => :scope => client_id is added automatically
+  validates_tenant_uniqueness_of :slug
+end
+```
+
+* When used with an *optional* tenant, the uniqueness constraint is not scoped if the item is shared, but is
+  scoped to the client new item otherwise. Note that a private item cannot have the the value if a shared item
+  already uses it.
+
+In the following case, 2 private articles can have the same slug if they belongs to 2 different clients. But if a shared
+article has the slug "slugA", no client will be able to use that slug again, like a standard validates_uniqueness_of does.
+
+```ruby
+class Article
+  include Mongoid::Document
+  include Mongoid::Multitenancy::Document
+
+  tenant :client, optional: true
+
+  field :slug
+
+  validates_tenant_uniqueness_of :slug
 end
 ```
 

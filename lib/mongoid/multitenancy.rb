@@ -1,7 +1,8 @@
-require "mongoid"
-require "mongoid/multitenancy/document"
-require "mongoid/multitenancy/version"
-require "mongoid/validators/tenant_validator"
+require 'mongoid'
+require 'mongoid/multitenancy/document'
+require 'mongoid/multitenancy/version'
+require 'mongoid/multitenancy/validators/tenancy'
+require 'mongoid/multitenancy/validators/tenant_uniqueness'
 
 module Mongoid
   module Multitenancy
@@ -20,7 +21,7 @@ module Mongoid
       # Affects a tenant temporary for a block execution
       def with_tenant(tenant, &block)
         if block.nil?
-          raise ArgumentError, "block required"
+          raise ArgumentError, 'block required'
         end
 
         old_tenant = self.current_tenant

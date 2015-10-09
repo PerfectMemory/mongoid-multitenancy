@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Mandatory do
 
   it_behaves_like "a tenantable model"
-  it { is_expected.to validate_uniqueness_of(:slug).scoped_to(:client_id) }
+  it { is_expected.to validate_tenant_uniqueness_of(:slug) }
 
   let(:client) do
     Account.create!(:name => "client")
@@ -76,6 +76,26 @@ describe Mandatory do
       it "sets the client field" do
         item.valid?
         expect(item.client).to eq client
+      end
+
+      context "with a uniqueness constraint" do
+        let(:duplicate) do
+          Mandatory.new(:title => "title Y", :slug => "page-x")
+        end
+
+        before do
+          item.save!
+        end
+
+        it 'does not allow duplicates on the same tenant' do
+          expect(duplicate).not_to be_valid
+        end
+
+        it 'allow duplicates on a different same tenant' do
+          Mongoid::Multitenancy.with_tenant(another_client) do
+            expect(duplicate).to be_valid
+          end
+        end
       end
     end
 

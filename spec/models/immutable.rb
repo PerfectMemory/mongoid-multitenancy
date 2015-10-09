@@ -7,7 +7,7 @@ class Immutable
   field :slug, :type => String
   field :title, :type => String
 
-  validates_uniqueness_of :slug
+  validates_tenant_uniqueness_of :slug
   validates_presence_of :slug
   validates_presence_of :title
 
