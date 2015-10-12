@@ -13,6 +13,12 @@ describe Optional do
     Account.create!(:name => "another client")
   end
 
+  let(:item) do
+    Optional.new(:title => "title X", :slug => "page-x")
+  end
+
+  it_behaves_like "a tenant validator"
+
   describe ".default_scope" do
     before do
       @itemC = Optional.create!(:title => "title C", :slug => "article-c")
@@ -64,29 +70,21 @@ describe Optional do
   end
 
   describe "#valid?" do
-    let(:item) do
-      Optional.new(:title => "title X", :slug => "page-x")
-    end
-
-    it_behaves_like "a tenant validator"
-
-    context "with a current tenant" do
+    context "with a tenant" do
       before do
-        Mongoid::Multitenancy.current_tenant = client
+        item.client = client
       end
 
-      it "does not set the client field" do
-        item.valid?
-        expect(item.client).to be_nil
+      it 'is valid' do
+        expect(item).to be_valid
       end
 
       context "with a uniqueness constraint" do
         let(:duplicate) do
-          Optional.new(:title => "title Y", :slug => "page-x", :client => another_client)
+          Optional.new(:title => "title Y", :slug => "page-x")
         end
 
         before do
-          item.client = client
           item.save!
         end
 
@@ -102,27 +100,26 @@ describe Optional do
       end
     end
 
-    context "without a current tenant" do
-      it "does not set the client field" do
-        item.valid?
-        expect(item.client).to be_nil
+    context "without a tenant" do
+      before do
+        item.client = nil
       end
 
-      it "is valid" do
+      it 'is valid' do
         expect(item).to be_valid
       end
 
       context "with a uniqueness constraint" do
         let(:duplicate) do
-          Optional.new(:title => "title Y", :slug => "page-x", :client => another_client)
+          Optional.new(:title => "title Y", :slug => "page-x")
         end
 
         before do
           item.save!
         end
 
-        it 'does not allow duplicates on any tenant' do
-          Mongoid::Multitenancy.with_tenant(another_client) do
+        it 'does not allow duplicates on any client' do
+          Mongoid::Multitenancy.with_tenant(client) do
             expect(duplicate).not_to be_valid
           end
         end

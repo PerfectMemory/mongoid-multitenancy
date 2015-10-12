@@ -6,54 +6,78 @@ shared_examples_for "a tenantable model" do
 end
 
 shared_examples_for "a tenant validator" do
-  context "within a client context" do
-    before do
-      Mongoid::Multitenancy.current_tenant = client
-    end
-
-    context "with the client id" do
+  describe "#initialize" do
+    context "within a client context" do
       before do
-        item.client = client
+        Mongoid::Multitenancy.current_tenant = client
       end
 
-      it "is valid" do
-        expect(item).to be_valid
+      it "set the client" do
+        expect(item.client).to eq client
       end
     end
 
-    context "with another client id" do
+    context "without a client context" do
       before do
-        item.client = another_client
+        Mongoid::Multitenancy.current_tenant = nil
       end
 
-      it "is not valid" do
-        expect(item).not_to be_valid
+      it "does not set any client" do
+        expect(item.client).to be_nil
       end
     end
   end
 
-  context "without a client context" do
-    before do
-      Mongoid::Multitenancy.current_tenant = nil
+  describe "#valid?" do
+    context "within a client context" do
+      before do
+        Mongoid::Multitenancy.current_tenant = client
+      end
+
+      context "with the client id" do
+        before do
+          item.client = client
+        end
+
+        it "is valid" do
+          expect(item).to be_valid
+        end
+      end
+
+      context "with another client id" do
+        before do
+          item.client = another_client
+        end
+
+        it "is not valid" do
+          expect(item).not_to be_valid
+        end
+      end
     end
 
-    context "with the client id" do
+    context "without a client context" do
       before do
-        item.client = client
+        Mongoid::Multitenancy.current_tenant = nil
       end
 
-      it "is valid" do
-        expect(item).to be_valid
-      end
-    end
+      context "with the client id" do
+        before do
+          item.client = client
+        end
 
-    context "with another client id" do
-      before do
-        item.client = another_client
+        it "is valid" do
+          expect(item).to be_valid
+        end
       end
 
-      it "is valid" do
-        expect(item).to be_valid
+      context "with another client id" do
+        before do
+          item.client = another_client
+        end
+
+        it "is valid" do
+          expect(item).to be_valid
+        end
       end
     end
   end

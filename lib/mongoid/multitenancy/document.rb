@@ -35,6 +35,13 @@ module Mongoid
             end
           }
 
+          # Apply the default value when the default scope is complex (optional tenant)
+          after_initialize lambda {
+            if Multitenancy.current_tenant and send(association.to_sym).nil?
+              send "#{association}=".to_sym, Multitenancy.current_tenant
+            end
+          }
+
           self.define_singleton_method(:inherited) do |child|
             child.tenant association, options
             super(child)
