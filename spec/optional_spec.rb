@@ -2,9 +2,6 @@ require 'spec_helper'
 
 describe Optional do
 
-  it_behaves_like "a tenantable model"
-  it { is_expected.to validate_tenant_uniqueness_of(:slug) }
-
   let(:client) do
     Account.create!(:name => "client")
   end
@@ -17,7 +14,8 @@ describe Optional do
     Optional.new(:title => "title X", :slug => "page-x")
   end
 
-  it_behaves_like "a tenant validator"
+  it_behaves_like "a tenantable model"
+  it { is_expected.to validate_tenant_uniqueness_of(:slug) }
 
   describe ".default_scope" do
     before do

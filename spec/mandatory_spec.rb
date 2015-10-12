@@ -2,9 +2,6 @@ require 'spec_helper'
 
 describe Mandatory do
 
-  it_behaves_like "a tenantable model"
-  it { is_expected.to validate_tenant_uniqueness_of(:slug) }
-
   let(:client) do
     Account.create!(:name => "client")
   end
@@ -12,6 +9,13 @@ describe Mandatory do
   let(:another_client) do
     Account.create!(:name => "another client")
   end
+
+  let(:item) do
+    Mandatory.new(:title => "title X", :slug => "page-x")
+  end
+
+  it_behaves_like "a tenantable model"
+  it { is_expected.to validate_tenant_uniqueness_of(:slug) }
 
   describe ".default_scope" do
     before do
@@ -62,20 +66,13 @@ describe Mandatory do
   end
 
   describe "#valid?" do
-    let(:item) do
-      Mandatory.new(:title => "title X", :slug => "page-x")
-    end
-
-    it_behaves_like "a tenant validator"
-
-    context "with a current tenant" do
+    context "with a tenant" do
       before do
-        Mongoid::Multitenancy.current_tenant = client
+        item.client = client
       end
 
-      it "sets the client field" do
-        item.valid?
-        expect(item.client).to eq client
+      it 'is valid' do
+        expect(item).to be_valid
       end
 
       context "with a uniqueness constraint" do
@@ -99,12 +96,12 @@ describe Mandatory do
       end
     end
 
-    context "without a current tenant" do
-      it "does not set the client field" do
-        expect(item.client).to be_nil
+    context "without a tenant" do
+      before do
+        item.client = nil
       end
 
-      it "is invalid" do
+      it 'is not valid' do
         expect(item).not_to be_valid
       end
     end

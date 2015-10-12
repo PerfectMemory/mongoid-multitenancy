@@ -6,8 +6,22 @@ module Mongoid
       module ClassMethods
         attr_accessor :tenant_field, :tenant_options
 
+        # List of authorized options
         MULTITENANCY_OPTIONS = [:optional, :immutable, :full_indexes, :index]
 
+        # Defines the tenant field for the document.
+        #
+        # @example Define a tenant.
+        #   tenant :client, optional: false, immutable: true, full_indexes: true
+        #
+        # @param [ Symbol ] name The name of the relation.
+        # @param [ Hash ] options The relation options. All the belongs_to options are allowed plus the following ones:
+        #
+        # @option options [ Boolean ] :full_indexes If true the tenant field will be added for each index.
+        # @option options [ Boolean ] :immutable If true changing the tenant wil raise an Exception.
+        # @option options [ Boolean ] :optional If true allow the document to be shared among all the tenants.
+        #
+        # @return [ Field ] The generated field
         def tenant(association = :account, options = {})
           options = { full_indexes: true, immutable: true }.merge(options)
           assoc_options, multitenant_options = build_options(options)

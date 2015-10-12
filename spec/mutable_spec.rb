@@ -1,9 +1,6 @@
 require 'spec_helper'
 
 describe Mutable do
-
-  it_behaves_like "a tenantable model"
-
   let(:client) do
     Account.create!(:name => "client")
   end
@@ -11,6 +8,12 @@ describe Mutable do
   let(:another_client) do
     Account.create!(:name => "another client")
   end
+
+  let(:item) do
+    Mutable.new(:title => "title X", :slug => "page-x")
+  end
+
+  it_behaves_like "a tenantable model"
 
   describe "#valid?" do
     before do
@@ -20,12 +23,6 @@ describe Mutable do
     after do
       Mongoid::Multitenancy.current_tenant = nil
     end
-
-    let(:item) do
-      Mutable.new(:title => "title X", :slug => "page-x")
-    end
-
-    it_behaves_like "a tenant validator"
 
     context "when the tenant has not changed" do
       before do

@@ -1,16 +1,16 @@
 # mongoid-multitenancy [![Build Status](https://travis-ci.org/PerfectMemory/mongoid-multitenancy.png?branch=master)](https://travis-ci.org/PerfectMemory/mongoid-multitenancy) [![Coverage Status](https://coveralls.io/repos/PerfectMemory/mongoid-multitenancy/badge.svg?branch=master&service=github)](https://coveralls.io/github/PerfectMemory/mongoid-multitenancy?branch=master) [![Code Climate](https://codeclimate.com/github/PerfectMemory/mongoid-multitenancy.png)](https://codeclimate.com/github/PerfectMemory/mongoid-multitenancy) [![Dependency Status](https://gemnasium.com/PerfectMemory/mongoid-multitenancy.png)](https://gemnasium.com/PerfectMemory/mongoid-multitenancy)
 
-mongoid-multitenancy adds the ability to scope [Mongoid](https://github.com/mongoid/mongoid) models to a tenant in a **shared database strategy**. Tenants are represented by a tenant model, such as `Client`. mongoid-multitenancy will help you set the current tenant on each request and ensures all 'tenant models' are always properly scoped to the current tenant: when viewing, searching and creating.
+mongoid-multitenancy adds the ability to scope [Mongoid](https://github.com/mongoid/mongoid) models to a tenant in a **shared database strategy**. Tenants are represented by a tenant model, such as `Client`. mongoid-multitenancy will help you set the current tenant on each request and ensures that all 'tenant models' are always properly scoped to the current tenant: when viewing, searching and creating.
 
 It is directly inspired by the [acts_as_tenant gem](https://github.com/ErwinM/acts_as_tenant) for Active Record.
 
 In addition, mongoid-multitenancy:
 
 * allows you to set the current tenant
-* redefines some mongoid functions like `index`, `validates_with` and `delete_all` to take in account the multitenancy
 * allows shared items between the tenants
 * allows you to define an immutable tenant field once it is persisted
-* is thread safe.
+* is thread safe
+* redefines some mongoid functions like `index`, `validates_with` and `delete_all` to take in account the multitenancy.
 
 Installation
 ===============
@@ -30,7 +30,7 @@ Or install it yourself as:
 Usage
 ===============
 
-There are two steps in adding multi-tenancy to your app with acts_as_tenant:
+There are two steps to add multi-tenancy to your app with mongoid-multitenancy:
 
 1. setting the current tenant and
 2. scoping your models.
@@ -87,7 +87,8 @@ The association passed to the `tenant` function must be valid.
 
  * :optional : set to true when the tenant is optional (default value is `false`)
  * :immutable : set to true when the tenant field is immutable (default value is `true`)
- * :class_name, etc. : all the other options will be passed to the mongoid relation
+ * :full_indexes : set to true to add the tenant field automatically to all the indexes (default value is `true`)
+ * :class_name, etc. : all the other options will be passed to the mongoid relation (belongs_to)
 
 Some examples to illustrate this behavior:
 
@@ -110,7 +111,9 @@ article.valid? # => false
 
 **Optional tenant**
 
-When setting an optional tenant, for example to allow shared instances between all the tenants, the default scope will return both the tenant and the free-tenant items. That means that using `Article.delete_all` or `Article.destroy_all` will **remove the shared items too**. And that means too that **the tenant must be set manually**.
+When setting an optional tenant, for example to allow shared instances between all the tenants, the default scope will return both the tenant and the free-tenant items. That means that using `Article.delete_all` or `Article.destroy_all` will **remove the shared items too**.
+
+Note: if a current tenant is set and you want to mark the item shared, you must explicitly set the tenant relation to nil after the initialization.
 
 ```ruby
 class Article
@@ -125,11 +128,13 @@ end
 Mongoid::Multitenancy.with_tenant(client_instance) do
   Article.all # => all articles where client_id.in [50ca04b86c82bfc125000025, nil]
   article = Article.new(:title => 'New article')
-  article.save # => <#Article _id: 50ca04b86c82bfc125000044, title: 'New blog', client_id: nil>
+  article.save # => <#Article _id: 50ca04b86c82bfc125000044, title: 'New blog', client_id: 50ca04b86c82bfc125000025>
 
-  # tenant needs to be set manually
-  article.tenant = client_instance
-  article.save => <#Article _id: 50ca04b86c82bfc125000044, title: 'New blog', client_id: 50ca04b86c82bfc125000025>
+  # tenant needs to be set manually to nil
+  article = Article.new(:title => 'New article', :client => nil)
+  article.save # => <#Article _id: 50ca04b86c82bfc125000044, title: 'New blog', client_id: 50ca04b86c82bfc125000025>
+  article.tenant = nil
+  article.save => <#Article _id: 50ca04b86c82bfc125000044, title: 'New blog', client_id: nil>
 end
 ```
 
