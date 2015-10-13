@@ -30,7 +30,7 @@ class DatabaseCleaner
   end
 
   def collections
-    database['system.namespaces'].find(:name => { '$not' => /\.system\.|\$/ }).to_a.map do |collection|
+    database['system.namespaces'].find(name: { '$not' => /\.system\.|\$/ }).to_a.map do |collection|
       _, name = collection['name'].split('.', 2)
       name
     end

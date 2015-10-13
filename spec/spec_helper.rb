@@ -1,4 +1,4 @@
-MODELS = File.join(File.dirname(__FILE__), "models")
+MODELS = File.join(File.dirname(__FILE__), 'models')
 
 require 'simplecov'
 require 'coveralls'
@@ -27,7 +27,7 @@ require_relative 'support/mongoid_matchers'
 Dir["#{MODELS}/*.rb"].each { |f| require f }
 
 Mongoid.configure do |config|
-  config.connect_to "mongoid_multitenancy"
+  config.connect_to 'mongoid_multitenancy'
 end
 
 Mongoid.logger = nil

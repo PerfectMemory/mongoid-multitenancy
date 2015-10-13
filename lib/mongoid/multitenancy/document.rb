@@ -15,15 +15,19 @@ module Mongoid
         #   tenant :client, optional: false, immutable: true, full_indexes: true
         #
         # @param [ Symbol ] name The name of the relation.
-        # @param [ Hash ] options The relation options. All the belongs_to options are allowed plus the following ones:
+        # @param [ Hash ] options The relation options.
+        #   All the belongs_to options are allowed plus the following ones:
         #
-        # @option options [ Boolean ] :full_indexes If true the tenant field will be added for each index.
-        # @option options [ Boolean ] :immutable If true changing the tenant wil raise an Exception.
-        # @option options [ Boolean ] :optional If true allow the document to be shared among all the tenants.
+        # @option options [ Boolean ] :full_indexes If true the tenant field
+        #   will be added for each index.
+        # @option options [ Boolean ] :immutable If true changing the tenant
+        #   wil raise an Exception.
+        # @option options [ Boolean ] :optional If true allow the document
+        #   to be shared among all the tenants.
         #
         # @return [ Field ] The generated field
         def tenant(association = :account, options = {})
-          options = { full_indexes: true, immutable: true }.merge(options)
+          options = { full_indexes: true, immutable: true }.merge!(options)
           assoc_options, multitenant_options = build_options(options)
 
           # Setup the association between the class and the tenant class
@@ -36,34 +40,10 @@ module Mongoid
           # Validates the tenant field
           validates_tenancy_of tenant_field, multitenant_options
 
-          # Set the default_scope to scope to current tenant
-          default_scope lambda {
-            if Multitenancy.current_tenant
-              if multitenant_options[:optional]
-                where(self.tenant_field.to_sym.in => [Multitenancy.current_tenant.id, nil])
-              else
-                where(self.tenant_field => Multitenancy.current_tenant.id)
-              end
-            else
-              where(nil)
-            end
-          }
-
-          # Apply the default value when the default scope is complex (optional tenant)
-          after_initialize lambda {
-            if Multitenancy.current_tenant and send(association.to_sym).nil?
-              send "#{association}=".to_sym, Multitenancy.current_tenant
-            end
-          }
-
-          self.define_singleton_method(:inherited) do |child|
-            child.tenant association, options
-            super(child)
-          end
-
-          if multitenant_options[:index]
-            index({self.tenant_field => 1}, { background: true })
-          end
+          define_default_scope
+          define_initializer association
+          define_inherited association, options
+          define_index if multitenant_options[:index]
         end
 
         # Validates whether or not a field is unique against the documents in the
@@ -104,7 +84,10 @@ module Mongoid
 
         # Redefine 'index' to include the tenant field in first position
         def index(spec, options = nil)
-          spec = { self.tenant_field => 1 }.merge(spec) if self.tenant_options[:full_indexes]
+          if tenant_options[:full_indexes]
+            spec = { tenant_field => 1 }.merge(spec)
+          end
+
           super(spec, options)
         end
 
@@ -129,6 +112,54 @@ module Mongoid
           end
 
           [assoc_options, multitenant_options]
+        end
+
+        # @private
+        #
+        # Define the after_initialize
+        def define_initializer(association)
+          # Apply the default value when the default scope is complex (optional tenant)
+          after_initialize lambda {
+            if Multitenancy.current_tenant && send(association.to_sym).nil?
+              send "#{association}=".to_sym, Multitenancy.current_tenant
+            end
+          }
+        end
+
+        # @private
+        #
+        # Define the inherited method
+        def define_inherited(association, options)
+          define_singleton_method(:inherited) do |child|
+            child.tenant association, options
+            super(child)
+          end
+        end
+
+        # @private
+        #
+        # Set the default scope
+        def define_default_scope
+          # Set the default_scope to scope to current tenant
+          default_scope lambda {
+            if Multitenancy.current_tenant
+              tenant_id = Multitenancy.current_tenant.id
+              if tenant_options[:optional]
+                where(tenant_field.to_sym.in => [tenant_id, nil])
+              else
+                where(tenant_field => tenant_id)
+              end
+            else
+              where(nil)
+            end
+          }
+        end
+
+        # @private
+        #
+        # Create the index
+        def define_index
+          index({ tenant_field => 1 }, background: true)
         end
       end
     end

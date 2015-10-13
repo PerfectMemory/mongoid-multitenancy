@@ -5,4 +5,4 @@ require 'yard'
 YARD::Rake::YardocTask.new
 RSpec::Core::RakeTask.new(:spec)
 
-task :default => :spec
+task default: :spec
