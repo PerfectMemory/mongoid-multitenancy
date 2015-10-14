@@ -34,13 +34,13 @@ module Mongoid
           belongs_to association, assoc_options
 
           # Get the tenant model and its foreign key
-          self.tenant_field = reflect_on_association(association).foreign_key
+          self.tenant_field = reflect_on_association(association).foreign_key.to_sym
           self.tenant_options = multitenant_options
 
           # Validates the tenant field
           validates_tenancy_of tenant_field, multitenant_options
 
-          define_default_scope
+          define_scopes
           define_initializer association
           define_inherited association, options
           define_index if multitenant_options[:index]
@@ -138,14 +138,14 @@ module Mongoid
 
         # @private
         #
-        # Set the default scope
-        def define_default_scope
+        # Define the scopes
+        def define_scopes
           # Set the default_scope to scope to current tenant
           default_scope lambda {
             if Multitenancy.current_tenant
               tenant_id = Multitenancy.current_tenant.id
               if tenant_options[:optional]
-                where(tenant_field.to_sym.in => [tenant_id, nil])
+                where(tenant_field.in => [tenant_id, nil])
               else
                 where(tenant_field => tenant_id)
               end
@@ -153,6 +153,9 @@ module Mongoid
               where(nil)
             end
           }
+
+          scope :shared, -> { where(tenant_field => nil) }
+          scope :unshared, -> { where(tenant_field => Multitenancy.current_tenant.id) }
         end
 
         # @private

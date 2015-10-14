@@ -20,16 +20,13 @@ module Mongoid
 
       # Affects a tenant temporary for a block execution
       def with_tenant(tenant, &block)
-        if block.nil?
-          raise ArgumentError, 'block required'
-        end
+        raise ArgumentError, 'block required' if block.nil?
 
         old_tenant = self.current_tenant
         self.current_tenant = tenant
-
-        block.call
-
+        result = block.call
         self.current_tenant = old_tenant
+        result
       end
     end
   end

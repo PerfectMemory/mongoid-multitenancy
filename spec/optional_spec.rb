@@ -38,44 +38,109 @@ describe Optional do
   end
 
   describe '.default_scope' do
-    before do
-      @itemC = Optional.create!(title: 'title C', slug: 'article-c')
-      Mongoid::Multitenancy.with_tenant(client) { @itemX = Optional.create!(title: 'title X', slug: 'article-x', :client => client) }
-      Mongoid::Multitenancy.with_tenant(another_client) { @itemY = Optional.create!(title: 'title Y', slug: 'article-y', :client => another_client) }
+    let!(:item_a) do
+      Mongoid::Multitenancy.with_tenant(client) do
+        Optional.create!(title: 'title A', slug: 'article-a')
+      end
+    end
+
+    let!(:item_b) do
+      Mongoid::Multitenancy.with_tenant(another_client) do
+        Optional.create!(title: 'title B', slug: 'article-b')
+      end
+    end
+
+    let!(:shared_item) do
+      Optional.create!(title: 'title C', slug: 'article-c')
     end
 
     context 'with a current tenant' do
-      before do
-        Mongoid::Multitenancy.current_tenant = another_client
-      end
-
       it 'filters on the current tenant / free-tenant items' do
-        expect(Optional.all.to_a).to match_array [@itemY, @itemC]
+        Mongoid::Multitenancy.with_tenant(another_client) do
+          expect(Optional.all.to_a).to match_array [shared_item, item_b]
+        end
       end
     end
 
     context 'without a current tenant' do
-      before do
-        Mongoid::Multitenancy.current_tenant = nil
-      end
-
       it 'does not filter on any tenant' do
-        expect(Optional.all.to_a).to match_array [@itemC, @itemX, @itemY]
+        expect(Optional.all.to_a).to match_array [item_a, item_b, shared_item]
+      end
+    end
+  end
+
+  describe '.shared' do
+    let!(:item_a) do
+      Mongoid::Multitenancy.with_tenant(client) do
+        Optional.create!(title: 'title A', slug: 'article-a')
+      end
+    end
+
+    let!(:item_b) do
+      Mongoid::Multitenancy.with_tenant(another_client) do
+        Optional.create!(title: 'title B', slug: 'article-b')
+      end
+    end
+
+    let!(:shared_item) do
+      Optional.create!(title: 'title C', slug: 'article-c')
+    end
+
+    it 'returns only the shared items' do
+      Mongoid::Multitenancy.with_tenant(another_client) do
+        expect(Optional.shared.to_a).to match_array [shared_item]
+      end
+    end
+  end
+
+  describe '.unshared' do
+    let!(:item_a) do
+      Mongoid::Multitenancy.with_tenant(client) do
+        Optional.create!(title: 'title A', slug: 'article-a')
+      end
+    end
+
+    let!(:item_b) do
+      Mongoid::Multitenancy.with_tenant(another_client) do
+        Optional.create!(title: 'title B', slug: 'article-b')
+      end
+    end
+
+    let!(:shared_item) do
+      Optional.create!(title: 'title C', slug: 'article-c')
+    end
+
+    it 'returns only the shared items' do
+      Mongoid::Multitenancy.with_tenant(another_client) do
+        expect(Optional.unshared.to_a).to match_array [item_b]
       end
     end
   end
 
   describe '#delete_all' do
-    before do
-      @itemC = Optional.create!(title: 'title C', slug: 'article-c')
-      Mongoid::Multitenancy.with_tenant(client) { @itemX = Optional.create!(title: 'title X', slug: 'article-x', :client => client) }
-      Mongoid::Multitenancy.with_tenant(another_client) { @itemY = Optional.create!(title: 'title Y', slug: 'article-y', :client => another_client) }
+    let!(:item_a) do
+      Mongoid::Multitenancy.with_tenant(client) do
+        Optional.create!(title: 'title A', slug: 'article-a')
+      end
+    end
+
+    let!(:item_b) do
+      Mongoid::Multitenancy.with_tenant(another_client) do
+        Optional.create!(title: 'title B', slug: 'article-b')
+      end
+    end
+
+    let!(:shared_item) do
+      Optional.create!(title: 'title C', slug: 'article-c')
     end
 
     context 'with a current tenant' do
       it 'only deletes the current tenant / free-tenant items' do
-        Mongoid::Multitenancy.with_tenant(another_client) { Optional.delete_all }
-        expect(Optional.all.to_a).to match_array [@itemX]
+        Mongoid::Multitenancy.with_tenant(another_client) do
+          Optional.delete_all
+        end
+
+        expect(Optional.all.to_a).to match_array [item_a]
       end
     end
 

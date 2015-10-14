@@ -43,7 +43,7 @@ RSpec.configure do |config|
     DatabaseCleaner.clean
   end
 
-  config.after(:each) do
+  config.before(:each) do
     Mongoid::Multitenancy.current_tenant = nil
   end
 end
