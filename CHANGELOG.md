@@ -1,3 +1,13 @@
+## 1.1
+
+### New Features
+
+* Add scopes *shared* and *unshared* (1b5c420)
+
+### Fixes
+
+* When a tenant is optional, do not override the tenant during persisted document initialization (81a9b45)
+
 ## 1.0.0
 
 ### New Features
