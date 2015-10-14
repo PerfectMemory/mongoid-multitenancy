@@ -1,5 +1,3 @@
-require 'pp'
-
 class DatabaseCleaner
   class << self
     def clean
