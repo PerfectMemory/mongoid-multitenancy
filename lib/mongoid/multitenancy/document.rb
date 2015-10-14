@@ -120,7 +120,7 @@ module Mongoid
         def define_initializer(association)
           # Apply the default value when the default scope is complex (optional tenant)
           after_initialize lambda {
-            if Multitenancy.current_tenant && send(association.to_sym).nil?
+            if Multitenancy.current_tenant && send(association.to_sym).nil? && new_record?
               send "#{association}=".to_sym, Multitenancy.current_tenant
             end
           }

@@ -17,6 +17,26 @@ describe Optional do
   it_behaves_like 'a tenantable model'
   it { is_expected.to validate_tenant_uniqueness_of(:slug) }
 
+  describe '#initialize' do
+    context 'within a client context' do
+      before do
+        Mongoid::Multitenancy.current_tenant = client
+      end
+
+      context 'when persisted' do
+        before do
+          item.client = nil
+          item.save!
+        end
+
+        it 'does not override the client' do
+          item.reload
+          expect(Optional.last.client).to be_nil
+        end
+      end
+    end
+  end
+
   describe '.default_scope' do
     before do
       @itemC = Optional.create!(title: 'title C', slug: 'article-c')
