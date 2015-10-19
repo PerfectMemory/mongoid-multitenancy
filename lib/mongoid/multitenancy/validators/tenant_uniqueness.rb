@@ -36,8 +36,7 @@ module Mongoid
         criteria = create_criteria(klass, document, attribute, value)
 
         # <<Add the tenant Criteria>>
-        add_tenant_criterion(criteria, klass, document)
-
+        criteria = with_tenant_criterion(criteria, klass, document)
         criteria = criteria.merge(options[:conditions].call) if options[:conditions]
 
         if Mongoid::VERSION.start_with?('4')
@@ -51,18 +50,19 @@ module Mongoid
         end
       end
 
-      # Create the validation criteria for a tenant model.
+      # Add the scope criteria for a tenant model criteria.
       #
       # @api private
-      def add_tenant_criterion(criteria, base, document)
-        tenant_value = document.send(base.tenant_field.to_sym)
+      def with_tenant_criterion(criteria, base, document)
+        item = base.tenant_field.to_sym
+        name = document.database_field_name(item)
 
         if document.class.tenant_options[:optional]
-          if tenant_value
-            criteria.selector.update(criterion(document, base.tenant_field, {'$in' => [tenant_value, nil].mongoize}))
+          if tenant_value = document.attributes[name]
+            criteria = criteria.where(:"#{item}".in => [tenant_value, nil])
           end
         else
-          criteria.selector.update(criterion(document, base.tenant_field, tenant_value.mongoize))
+          criteria = criteria.where(item => tenant_value)
         end
 
         criteria

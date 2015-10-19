@@ -155,7 +155,7 @@ describe Optional do
   describe '#valid?' do
     context 'with a tenant' do
       before do
-        item.client = client
+        Mongoid::Multitenancy.current_tenant = client
       end
 
       it 'is valid' do
