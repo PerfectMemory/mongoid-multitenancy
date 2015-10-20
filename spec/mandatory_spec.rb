@@ -68,7 +68,7 @@ describe Mandatory do
   describe '#valid?' do
     context 'with a tenant' do
       before do
-        item.client = client
+        Mongoid::Multitenancy.current_tenant = client
       end
 
       it 'is valid' do
@@ -97,10 +97,6 @@ describe Mandatory do
     end
 
     context 'without a tenant' do
-      before do
-        item.client = nil
-      end
-
       it 'is not valid' do
         expect(item).not_to be_valid
       end

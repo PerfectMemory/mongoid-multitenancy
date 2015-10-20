@@ -56,9 +56,10 @@ module Mongoid
       def with_tenant_criterion(criteria, base, document)
         item = base.tenant_field.to_sym
         name = document.database_field_name(item)
+        tenant_value = document.attributes[name]
 
         if document.class.tenant_options[:optional]
-          if tenant_value = document.attributes[name]
+          if document.attributes[name]
             criteria = criteria.where(:"#{item}".in => [tenant_value, nil])
           end
         else

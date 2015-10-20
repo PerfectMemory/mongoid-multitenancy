@@ -184,10 +184,6 @@ describe Optional do
     end
 
     context 'without a tenant' do
-      before do
-        item.client = nil
-      end
-
       it 'is valid' do
         expect(item).to be_valid
       end
