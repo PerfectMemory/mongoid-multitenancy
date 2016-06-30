@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe Mandatory do
-
   let(:client) do
     Account.create!(name: 'client')
   end

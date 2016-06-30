@@ -43,5 +43,4 @@ describe MutableChild do
       end
     end
   end
-
 end

@@ -1,5 +1,4 @@
 shared_examples_for 'a tenantable model' do
-
   it { is_expected.to belong_to(:client) }
   it { is_expected.to have_index_for(client_id: 1, title: 1) }
 

@@ -4,8 +4,8 @@ class NoScopable
 
   tenant :client, class_name: 'Account', scopes: false
 
-  field :slug, :type => String
-  field :title, :type => String
+  field :slug, type: String
+  field :title, type: String
 
-  index({ title: 1 })
+  index(title: 1)
 end

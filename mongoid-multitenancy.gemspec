@@ -8,8 +8,8 @@ Gem::Specification.new do |gem|
   gem.summary       = 'Support of a multi-tenant database with Mongoid'
   gem.homepage      = 'https://github.com/PerfectMemory/mongoid-multitenancy'
   gem.license       = 'MIT'
-  gem.files         = `git ls-files`.split($\)
-  gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
+  gem.files         = `git ls-files`.split($OUTPUT_RECORD_SEPARATOR)
+  gem.executables   = gem.files.grep(%r{^bin/}).map { |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = 'mongoid-multitenancy'
   gem.require_paths = ['lib']

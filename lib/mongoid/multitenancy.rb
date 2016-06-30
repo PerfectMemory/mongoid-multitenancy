@@ -7,7 +7,6 @@ require 'mongoid/multitenancy/validators/tenant_uniqueness'
 module Mongoid
   module Multitenancy
     class << self
-
       # Set the current tenant. Make it Thread aware
       def current_tenant=(tenant)
         Thread.current[:current_tenant] = tenant
@@ -22,9 +21,9 @@ module Mongoid
       def with_tenant(tenant, &block)
         raise ArgumentError, 'block required' if block.nil?
 
-        old_tenant = self.current_tenant
+        old_tenant = current_tenant
         self.current_tenant = tenant
-        result = block.call
+        result = yield
         self.current_tenant = old_tenant
         result
       end

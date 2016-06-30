@@ -7,7 +7,7 @@ module Mongoid
         attr_accessor :tenant_field, :tenant_options
 
         # List of authorized options
-        MULTITENANCY_OPTIONS = [:optional, :immutable, :full_indexes, :index, :scopes]
+        MULTITENANCY_OPTIONS = [:optional, :immutable, :full_indexes, :index, :scopes].freeze
 
         # Defines the tenant field for the document.
         #
