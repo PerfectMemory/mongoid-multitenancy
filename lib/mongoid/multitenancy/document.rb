@@ -7,7 +7,7 @@ module Mongoid
         attr_accessor :tenant_field, :tenant_options
 
         # List of authorized options
-        MULTITENANCY_OPTIONS = [:optional, :immutable, :full_indexes, :index]
+        MULTITENANCY_OPTIONS = [:optional, :immutable, :full_indexes, :index, :scopes]
 
         # Defines the tenant field for the document.
         #
@@ -24,10 +24,13 @@ module Mongoid
         #   wil raise an Exception.
         # @option options [ Boolean ] :optional If true allow the document
         #   to be shared among all the tenants.
-        #
+        # @option options [ Boolean ] :index If true build an index for
+        #   the tenant field itself.
+        # @option options [ Boolean ] :scopes If true create scopes :shared
+        #   and :unshared.
         # @return [ Field ] The generated field
         def tenant(association = :account, options = {})
-          options = { full_indexes: true, immutable: true }.merge!(options)
+          options = { full_indexes: true, immutable: true, scopes: true }.merge!(options)
           assoc_options, multitenant_options = build_options(options)
 
           # Setup the association between the class and the tenant class
@@ -40,7 +43,7 @@ module Mongoid
           # Validates the tenant field
           validates_tenancy_of tenant_field, multitenant_options
 
-          define_scopes
+          define_scopes if multitenant_options[:scopes]
           define_initializer association
           define_inherited association, options
           define_index if multitenant_options[:index]
@@ -131,7 +134,7 @@ module Mongoid
         # Define the inherited method
         def define_inherited(association, options)
           define_singleton_method(:inherited) do |child|
-            child.tenant association, options
+            child.tenant association, options.merge(scopes: false)
             super(child)
           end
         end

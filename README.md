@@ -88,6 +88,8 @@ The association passed to the `tenant` function must be valid.
  * :optional : set to true when the tenant is optional (default value is `false`)
  * :immutable : set to true when the tenant field is immutable (default value is `true`)
  * :full_indexes : set to true to add the tenant field automatically to all the indexes (default value is `true`)
+ * :index : set to true to define an index for the tenant field (default value is `false`)
+ * :scopes : set to true to define scopes :shared and :unshared (default value is `true`)
  * :class_name, etc. : all the other options will be passed to the mongoid relation (belongs_to)
 
 Some examples to illustrate this behavior:

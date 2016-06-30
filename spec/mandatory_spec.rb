@@ -17,6 +17,18 @@ describe Mandatory do
   it_behaves_like 'a tenantable model'
   it { is_expected.to validate_tenant_uniqueness_of(:slug) }
 
+  describe '.shared' do
+    it 'is defined' do
+      expect(Mandatory).to respond_to(:shared)
+    end
+  end
+
+  describe '.unshared' do
+    it 'is defined' do
+      expect(Mandatory).to respond_to(:unshared)
+    end
+  end
+
   describe '.default_scope' do
     before do
       Mongoid::Multitenancy.with_tenant(client) { @itemX = Mandatory.create!(title: 'title X', slug: 'article-x') }
