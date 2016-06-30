@@ -58,8 +58,8 @@ module Mongoid
         name = document.database_field_name(item)
         tenant_value = document.attributes[name]
 
-        if document.class.tenant_options[:optional]
-          if document.attributes[name]
+        if document.class.tenant_options[:optional] && !options[:exclude_shared]
+          if tenant_value
             criteria = criteria.where(:"#{item}".in => [tenant_value, nil])
           end
         else

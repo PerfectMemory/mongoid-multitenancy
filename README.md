@@ -85,12 +85,14 @@ The association passed to the `tenant` function must be valid.
 
 `tenant` accepts several options:
 
- * :optional : set to true when the tenant is optional (default value is `false`)
- * :immutable : set to true when the tenant field is immutable (default value is `true`)
- * :full_indexes : set to true to add the tenant field automatically to all the indexes (default value is `true`)
- * :index : set to true to define an index for the tenant field (default value is `false`)
- * :scopes : set to true to define scopes :shared and :unshared (default value is `true`)
- * :class_name, etc. : all the other options will be passed to the mongoid relation (belongs_to)
+| Option  | Default | Description |
+| ------------- | ------------- | ------------- |
+| :optional  | false  | set to true when the tenant is optional |
+| :immutable  | true  | set to true when the tenant field is immutable |
+| :full_indexes  | true  | set to true to add the tenant field automatically to all the indexes |
+| :index  | false  | set to true to define an index for the tenant field |
+| :scopes  | true  | set to true to define scopes :shared and :unshared |
+| :class_name, etc. |   | all the other options will be passed to the mongoid relation (belongs_to) |
 
 Some examples to illustrate this behavior:
 
@@ -183,12 +185,12 @@ class Article
 end
 ```
 
-* When used with an *optional* tenant, the uniqueness constraint is not scoped if the item is shared, but is
-  scoped to the client new item otherwise. Note that a private item cannot have the the value if a shared item
-  already uses it.
+* When used with an *optional* tenant, the uniqueness constraint by default is not scoped if the item is shared, but is
+  scoped to the client new item otherwise. Note that by default in that case a private item cannot have a value if a shared item
+  already uses it. You can change that behaviour by setting the option `exclude_shared` to `true`.
 
 In the following case, 2 private articles can have the same slug if they belongs to 2 different clients. But if a shared
-article has the slug "slugA", no client will be able to use that slug again, like a standard validates_uniqueness_of does.
+article has the slug "slugA", no client will be able to use that slug again, like a standard `validates_uniqueness_of` does.
 
 ```ruby
 class Article
@@ -200,6 +202,22 @@ class Article
   field :slug
 
   validates_tenant_uniqueness_of :slug
+end
+```
+
+In the following case, 2 private articles can have the same slug if they belongs to 2 different clients even if a shared
+article already uses that same slug, like a `validates_uniqueness_of scope: :client` does.
+
+```ruby
+class Article
+  include Mongoid::Document
+  include Mongoid::Multitenancy::Document
+
+  tenant :client, optional: true
+
+  field :slug
+
+  validates_tenant_uniqueness_of :slug, exclude_shared: true
 end
 ```
 
