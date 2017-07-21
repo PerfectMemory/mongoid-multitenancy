@@ -30,7 +30,8 @@ Mongoid.configure do |config|
   config.connect_to 'mongoid_multitenancy'
 end
 
-Mongoid.logger = nil
+Mongoid.logger.level = Logger::INFO
+Mongo::Logger.logger.level = Logger::INFO
 
 RSpec.configure do |config|
   config.include Mongoid::Matchers

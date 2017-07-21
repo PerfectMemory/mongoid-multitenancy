@@ -109,6 +109,7 @@ module Mongoid
           options.each do |k, v|
             if MULTITENANCY_OPTIONS.include?(k)
               multitenant_options[k] = v
+              assoc_options[k] = v if k == :optional
             else
               assoc_options[k] = v
             end

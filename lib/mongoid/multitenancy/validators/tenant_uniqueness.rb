@@ -39,14 +39,8 @@ module Mongoid
         criteria = with_tenant_criterion(criteria, klass, document)
         criteria = criteria.merge(options[:conditions].call) if options[:conditions]
 
-        if Mongoid::VERSION.start_with?('4')
-          if criteria.with(persistence_options(criteria)).exists?
-            add_error(document, attribute, value)
-          end
-        else
-          if criteria.with(criteria.persistence_options).read(mode: :primary).exists?
-            add_error(document, attribute, value)
-          end
+        if criteria.read(mode: :primary).exists?
+          add_error(document, attribute, value)
         end
       end
 
