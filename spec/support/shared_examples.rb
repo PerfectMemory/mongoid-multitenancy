@@ -1,6 +1,6 @@
 shared_examples_for 'a tenantable model' do
-  it { is_expected.to belong_to(:client) }
-  it { is_expected.to have_index_for(client_id: 1, title: 1) }
+  it { is_expected.to belong_to(:tenant) }
+  it { is_expected.to have_index_for(tenant_id: 1, title: 1) }
 
   describe '#initialize' do
     context 'within a client context' do
@@ -9,7 +9,7 @@ shared_examples_for 'a tenantable model' do
       end
 
       it 'set the client' do
-        expect(item.client).to eq client
+        expect(item.tenant).to eq client
       end
     end
 
@@ -19,7 +19,7 @@ shared_examples_for 'a tenantable model' do
       end
 
       it 'does not set any client' do
-        expect(item.client).to be_nil
+        expect(item.tenant).to be_nil
       end
     end
   end
@@ -32,7 +32,7 @@ shared_examples_for 'a tenantable model' do
 
       context 'with the client id' do
         before do
-          item.client = client
+          item.tenant = client
         end
 
         it 'is valid' do
@@ -42,7 +42,7 @@ shared_examples_for 'a tenantable model' do
 
       context 'with another client id' do
         before do
-          item.client = another_client
+          item.tenant = another_client
         end
 
         it 'is not valid' do
@@ -58,7 +58,7 @@ shared_examples_for 'a tenantable model' do
 
       context 'with the client id' do
         before do
-          item.client = client
+          item.tenant = client
         end
 
         it 'is valid' do
@@ -68,7 +68,7 @@ shared_examples_for 'a tenantable model' do
 
       context 'with another client id' do
         before do
-          item.client = another_client
+          item.tenant = another_client
         end
 
         it 'is valid' do

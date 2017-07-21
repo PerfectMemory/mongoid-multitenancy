@@ -74,7 +74,7 @@ class Article
   include Mongoid::Document
   include Mongoid::Multitenancy::Document
 
-  tenant(:client)
+  tenant(:tenant)
 
   field :title, :type => String
 end
@@ -101,15 +101,15 @@ Some examples to illustrate this behavior:
 Mongoid::Multitenancy.current_tenant = Client.find_by(:name => 'Perfect Memory') # => <#Client _id:50ca04b86c82bfc125000025, :name: "Perfect Memory">
 
  # All searches are scoped by the tenant, the following searches will only return objects belonging to the current client.
-Article.all # => all articles where client_id => 50ca04b86c82bfc125000025
+Article.all # => all articles where tenant_id => 50ca04b86c82bfc125000025
 
  # New objects are scoped to the current tenant
 article = Article.new(:title => 'New blog')
-article.save # => <#Article _id: 50ca04b86c82bfc125000044, title: 'New blog', client_id: 50ca04b86c82bfc125000025>
+article.save # => <#Article _id: 50ca04b86c82bfc125000044, title: 'New blog', tenant_id: 50ca04b86c82bfc125000025>
 
  # It can make the tenant field immutable once it is persisted to avoid inconsistency
 article.persisted? # => true
-article.client = another_client
+article.tenant = another_client
 article.valid? # => false
 ```
 
@@ -124,21 +124,21 @@ class Article
   include Mongoid::Document
   include Mongoid::Multitenancy::Document
 
-  tenant(:client, optional: true)
+  tenant(:tenant, optional: true)
 
   field :title, :type => String
 end
 
 Mongoid::Multitenancy.with_tenant(client_instance) do
-  Article.all # => all articles where client_id.in [50ca04b86c82bfc125000025, nil]
+  Article.all # => all articles where tenant_id.in [50ca04b86c82bfc125000025, nil]
   article = Article.new(:title => 'New article')
-  article.save # => <#Article _id: 50ca04b86c82bfc125000044, title: 'New blog', client_id: 50ca04b86c82bfc125000025>
+  article.save # => <#Article _id: 50ca04b86c82bfc125000044, title: 'New blog', tenant_id: 50ca04b86c82bfc125000025>
 
   # tenant needs to be set manually to nil
-  article = Article.new(:title => 'New article', :client => nil)
-  article.save # => <#Article _id: 50ca04b86c82bfc125000044, title: 'New blog', client_id: 50ca04b86c82bfc125000025>
+  article = Article.new(:title => 'New article', :tenant => nil)
+  article.save # => <#Article _id: 50ca04b86c82bfc125000044, title: 'New blog', tenant_id: 50ca04b86c82bfc125000025>
   article.tenant = nil
-  article.save => <#Article _id: 50ca04b86c82bfc125000044, title: 'New blog', client_id: nil>
+  article.save => <#Article _id: 50ca04b86c82bfc125000044, title: 'New blog', tenant_id: nil>
 end
 ```
 
@@ -177,7 +177,7 @@ class Article
   include Mongoid::Document
   include Mongoid::Multitenancy::Document
 
-  tenant :client
+  tenant :tenant
 
   field :slug
 
@@ -197,7 +197,7 @@ class Article
   include Mongoid::Document
   include Mongoid::Multitenancy::Document
 
-  tenant :client, optional: true
+  tenant :tenant, optional: true
 
   field :slug
 
@@ -206,14 +206,14 @@ end
 ```
 
 In the following case, 2 private articles can have the same slug if they belongs to 2 different clients even if a shared
-article already uses that same slug, like a `validates_uniqueness_of scope: :client` does.
+article already uses that same slug, like a `validates_uniqueness_of scope: :tenant` does.
 
 ```ruby
 class Article
   include Mongoid::Document
   include Mongoid::Multitenancy::Document
 
-  tenant :client, optional: true
+  tenant :tenant, optional: true
 
   field :slug
 
@@ -230,14 +230,14 @@ To create a single index on the tenant field, you can use the option `index: tru
 
 On the example below, only one indexe will be created:
 
-* { 'title_id' => 1, 'client_id' => 1 }
+* { 'title_id' => 1, 'tenant_id' => 1 }
 
 ```ruby
 class Article
   include Mongoid::Document
   include Mongoid::Multitenancy::Document
 
-  tenant :client, full_indexes: true
+  tenant :tenant, full_indexes: true
 
   field :title
 
@@ -247,7 +247,7 @@ end
 
 On the example below, 2 indexes will be created:
 
-* { 'client_id' => 1 }
+* { 'tenant_id' => 1 }
 * { 'title_id' => 1 }
 
 ```ruby
@@ -255,7 +255,7 @@ class Article
   include Mongoid::Document
   include Mongoid::Multitenancy::Document
 
-  tenant :client, index: true
+  tenant :tenant, index: true
 
   field :title
 

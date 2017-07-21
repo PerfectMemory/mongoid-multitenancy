@@ -38,7 +38,7 @@ describe Immutable do
       end
 
       it 'is not valid' do
-        item.client = another_client
+        item.tenant = another_client
         expect(item).not_to be_valid
       end
     end
