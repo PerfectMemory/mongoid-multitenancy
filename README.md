@@ -12,12 +12,17 @@ In addition, mongoid-multitenancy:
 * is thread safe
 * redefines some mongoid functions like `index`, `validates_with` and `delete_all` to take in account the multitenancy.
 
+Compatibility
+===============
+
+mongoid-multitenancy 2.0 is only compatible with mongoid 6. For mongoid 4 & 5 compatiblity, use mongoid-multitenancy 1.2.
+
 Installation
 ===============
 
 Add this line to your application's Gemfile:
 
-    gem 'mongoid-multitenancy'
+    gem 'mongoid-multitenancy', '~> 2.0'
 
 And then execute:
 
