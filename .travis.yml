@@ -1,13 +1,9 @@
 language: ruby
 rvm:
-  - 2.0.0
-  - 2.1.0
-  - 2.2.0
+  - 2.2.2
   - 2.3.0
-  - jruby
+  - 2.4.1
 gemfile:
-  - gemfiles/Gemfile.mongoid-4.0
-  - gemfiles/Gemfile.mongoid-5.0
   - Gemfile
 services:
   - mongodb

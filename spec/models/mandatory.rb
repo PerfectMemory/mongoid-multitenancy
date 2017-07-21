@@ -2,7 +2,7 @@ class Mandatory
   include Mongoid::Document
   include Mongoid::Multitenancy::Document
 
-  tenant(:client, class_name: 'Account')
+  tenant(:tenant, class_name: 'Account')
 
   field :slug, type: String
   field :title, type: String
