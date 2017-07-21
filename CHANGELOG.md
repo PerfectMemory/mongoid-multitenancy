@@ -1,3 +1,16 @@
+## 2.0
+
+### New Features
+
+* Add support for mongoid 6
+* Remove support for mongoid 4 & 5
+
+## 1.2
+
+### New Features
+
+* Add *exclude_shared* option for the TenantUniquenessValidator
+
 ## 1.1
 
 ### New Features
@@ -12,7 +25,7 @@
 
 ### New Features
 
-* Adds support for mongoid 5
+* Add support for mongoid 5
 
 ### Major Changes (Backwards Incompatible)
 
