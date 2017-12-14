@@ -21,11 +21,13 @@ module Mongoid
       def with_tenant(tenant, &block)
         raise ArgumentError, 'block required' if block.nil?
 
-        old_tenant = current_tenant
-        self.current_tenant = tenant
-        result = yield
-        self.current_tenant = old_tenant
-        result
+        begin
+          old_tenant = current_tenant
+          self.current_tenant = tenant
+          yield
+        ensure
+          self.current_tenant = old_tenant
+        end
       end
     end
   end
