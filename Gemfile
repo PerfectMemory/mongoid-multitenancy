@@ -1,7 +1,5 @@
 source 'https://rubygems.org'
 
-gem 'mongoid', '~> 6.0'
-
 gem 'rake'
 
 group :test do
