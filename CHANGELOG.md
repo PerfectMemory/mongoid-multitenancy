@@ -1,5 +1,20 @@
-## 2.0
+# Changelog
+All notable changes to this project will be documented in this file.
 
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+## [2.0.2] - 2018-08-23
+### Added
+
+* Support of mongoid 7
+
+## [2.0.1] - 2017-12-14
+### Changed
+
+* Add ensure block in method with_tenant
+
+## [2.0] - 2017-07-21
 ### New Features
 
 * Add support for mongoid 6
