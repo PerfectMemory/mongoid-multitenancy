@@ -1,5 +1,7 @@
 source 'https://rubygems.org'
 
+gem 'mongoid', '~> 6.0'
+
 gem 'rake'
 
 group :test do
@@ -10,6 +12,3 @@ group :test do
   gem 'mongoid-rspec', git: 'https://github.com/mongoid-rspec/mongoid-rspec.git'
   gem 'rubocop', require: false
 end
-
-# Specify your gem's dependencies in mongoid-multitenancy.gemspec
-gemspec
