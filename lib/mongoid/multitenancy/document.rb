@@ -96,7 +96,9 @@ module Mongoid
 
         # Redefine 'delete_all' to take in account the default scope
         def delete_all(conditions = nil)
-          scoped.where(conditions).delete
+          scope = scoped
+          scope = scopewhere(conditions) if conditions
+          scope.delete
         end
 
         private
@@ -154,7 +156,7 @@ module Mongoid
                 where(tenant_field => tenant_id)
               end
             else
-              where(nil)
+              all
             end
           }
 
