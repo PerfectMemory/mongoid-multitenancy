@@ -1,5 +1,7 @@
 # mongoid-multitenancy [![Build Status](https://api.travis-ci.org/PerfectMemory/mongoid-multitenancy.png?branch=master)](https://travis-ci.org/PerfectMemory/mongoid-multitenancy) [![Coverage Status](https://coveralls.io/repos/github/PerfectMemory/mongoid-multitenancy/badge.svg?branch=master)](https://coveralls.io/github/PerfectMemory/mongoid-multitenancy?branch=master) [![Code Climate](https://codeclimate.com/github/PerfectMemory/mongoid-multitenancy.png)](https://codeclimate.com/github/PerfectMemory/mongoid-multitenancy)
 
+This gem is the rebooted version of abandoned [mongoid multitenancy](https://github.com/PerfectMemory/mongoid-multitenancy)
+
 mongoid-multitenancy adds the ability to scope [Mongoid](https://github.com/mongoid/mongoid) models to a tenant in a **shared database strategy**. Tenants are represented by a tenant model, such as `Client`. mongoid-multitenancy will help you set the current tenant on each request and ensures that all 'tenant models' are always properly scoped to the current tenant: when viewing, searching and creating.
 
 It is directly inspired by the [acts_as_tenant gem](https://github.com/ErwinM/acts_as_tenant) for Active Record.
