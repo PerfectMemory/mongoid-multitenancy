@@ -15,5 +15,5 @@ Gem::Specification.new do |gem|
   gem.require_paths = ['lib']
   gem.version       = Mongoid::Multitenancy::VERSION
 
-  gem.add_dependency('mongoid', '~> 6', '< 8')
+  gem.add_dependency('mongoid', '>= 6', '< 8')
 end
