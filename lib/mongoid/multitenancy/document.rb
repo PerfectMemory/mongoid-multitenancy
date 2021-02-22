@@ -87,11 +87,13 @@ module Mongoid
 
         # Redefine 'index' to include the tenant field in first position
         def index(spec, options = nil)
-          if tenant_options[:full_indexes]
+          super_options = options.dup || {}
+          full_index = super_options.delete(:full_index)
+          if full_index.nil? ? tenant_options[:full_indexes] : full_index
             spec = { tenant_field => 1 }.merge(spec)
           end
 
-          super(spec, options)
+          super(spec, super_options)
         end
 
         # Redefine 'delete_all' to take in account the default scope

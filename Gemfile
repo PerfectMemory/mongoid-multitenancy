@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 gem 'rake'
 
 group :test do
-  gem 'database_cleaner'
+  gem 'database_cleaner-mongoid'
   gem 'coveralls', require: false
   gem 'rspec', '~> 3.1'
   gem 'yard'

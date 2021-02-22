@@ -2,7 +2,7 @@ MODELS = File.join(File.dirname(__FILE__), 'models')
 
 require 'simplecov'
 require 'coveralls'
-require 'database_cleaner'
+require 'database_cleaner-mongoid'
 
 SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
   SimpleCov::Formatter::HTMLFormatter,
