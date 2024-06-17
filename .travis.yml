@@ -6,6 +6,8 @@ rvm:
 gemfile:
   - gemfiles/Gemfile.mongoid-6
   - gemfiles/Gemfile.mongoid-7
+  - gemfiles/Gemfile.mongoid-8
+  - gemfiles/Gemfile.mongoid-9
   - Gemfile
 services:
   - mongodb

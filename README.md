@@ -15,7 +15,7 @@ In addition, mongoid-multitenancy:
 Compatibility
 ===============
 
-mongoid-multitenancy 2.0 is compatible with mongoid 6/7. For mongoid 4/5 compatiblity, use mongoid-multitenancy 1.2.
+mongoid-multitenancy 2 is compatible with mongoid 6/7/8/9. For mongoid 4/5 compatiblity, use mongoid-multitenancy 1.2.
 
 Installation
 ===============
