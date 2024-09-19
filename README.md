@@ -226,6 +226,22 @@ class Article
 end
 ```
 
+TenantUniqueness validator also allow to specify additional `conditions` to limit the uniqueness of the constraint.
+
+```ruby
+class Article
+  include Mongoid::Document
+  include Mongoid::Multitenancy::Document
+
+  tenant :tenant, optional: true
+
+  field :title
+  field :slug
+
+  validates_tenant_uniqueness_of :slug, exclude_shared: true, conditions: -> { ne(title: nil) }
+end
+```
+
 Mongoid indexes
 -------------------
 
