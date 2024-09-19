@@ -7,7 +7,7 @@ class OptionalExclude
   field :slug, type: String
   field :title, type: String
 
-  validates_tenant_uniqueness_of :slug, exclude_shared: true
+  validates_tenant_uniqueness_of :slug, exclude_shared: true, conditions: -> { ne(title: nil) }
   validates_presence_of :slug
   validates_presence_of :title
 
