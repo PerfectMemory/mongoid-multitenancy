@@ -37,7 +37,11 @@ module Mongoid
 
         # <<Add the tenant Criteria>>
         criteria = with_tenant_criterion(criteria, klass, document)
-        criteria = criteria.merge(options[:conditions].call.unscoped) if options[:conditions]
+        # Add additional conditions
+        if options[:conditions]
+          conditions = klass.unscoped { options[:conditions].call }
+          criteria = criteria.merge(conditions)
+        end
 
         if criteria.read(mode: :primary).exists?
           add_error(document, attribute, value)
